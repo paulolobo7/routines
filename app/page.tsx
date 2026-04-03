@@ -14,7 +14,7 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <Coffee className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-semibold text-foreground">Focusly</span>
+            <span className="text-xl font-semibold text-foreground">Routines</span>
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">

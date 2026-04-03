@@ -4,6 +4,10 @@ import { useState } from "react"
 import { Check, Circle, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useStorage } from "@/hooks/useStorage"
+import { Task } from "@/types"
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
+
 
 const initialTasks = [
   { id: 1, title: "Revisar relatório mensal", pomodoros: 3, completed: 2, done: false },
@@ -13,11 +17,22 @@ const initialTasks = [
 ]
 
 export function TaskList() {
-  const [tasks, setTasks] = useState(initialTasks)
+  const [tasks, setTasks] = useStorage<Task[]>({
+    key: LOCAL_STORAGE_KEYS.tasks,
+    initialValue: initialTasks.map(task => ({
+      id: task.id.toString(),
+      title: task.title,
+      pomodorosNeeded: task.pomodoros,
+      pomodorosCompleted: task.completed,
+      completed: task.done,
+      createdAt: new Date()
+    }))
+  })
 
-  const toggleTask = (id: number) => {
+  const toggleTask = (id: string) => {
+    if (!tasks) return;
     setTasks(tasks.map((task) =>
-      task.id === id ? { ...task, done: !task.done } : task
+      task.id === id ? { ...task, completed: !task.completed } : task
     ))
   }
 
@@ -31,22 +46,22 @@ export function TaskList() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-3">
-        {tasks.map((task) => (
+        {tasks?.map((task) => (
           <div
             key={task.id}
             className={`flex items-center gap-4 rounded-lg border border-border p-4 transition-all hover:bg-muted/50 ${
-              task.done ? "opacity-60" : ""
+              task.completed ? "opacity-60" : ""
             }`}
           >
             <button
               onClick={() => toggleTask(task.id)}
               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                task.done
+                task.completed
                   ? "border-primary bg-primary"
                   : "border-muted-foreground hover:border-primary"
               }`}
             >
-              {task.done ? (
+              {task.completed ? (
                 <Check className="h-3.5 w-3.5 text-primary-foreground" />
               ) : (
                 <Circle className="h-3.5 w-3.5 opacity-0" />
@@ -54,20 +69,20 @@ export function TaskList() {
             </button>
 
             <div className="flex-1">
-              <p className={`font-medium ${task.done ? "line-through" : ""}`}>
+              <p className={`font-medium ${task.completed ? "line-through" : ""}`}>
                 {task.title}
               </p>
               <div className="mt-1.5 flex items-center gap-1.5">
-                {Array.from({ length: task.pomodoros }).map((_, i) => (
+                {Array.from({ length: task.pomodorosNeeded }).map((_, i) => (
                   <div
                     key={i}
                     className={`h-2 w-2 rounded-full ${
-                      i < task.completed ? "bg-primary" : "bg-muted"
+                      i < task.pomodorosCompleted ? "bg-primary" : "bg-muted"
                     }`}
                   />
                 ))}
                 <span className="ml-1 text-xs text-muted-foreground">
-                  {task.completed}/{task.pomodoros}
+                  {task.pomodorosCompleted}/{task.pomodorosNeeded}
                 </span>
               </div>
             </div>
