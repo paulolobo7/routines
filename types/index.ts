@@ -39,3 +39,11 @@ export interface HistoryEntry {
     stats: DailyStats
     sessions: Session[]
 }
+
+export interface TimerSettings {
+    focusDuration: number
+    shortBreakDuration: number
+    longBreakDuration: number
+}
+
+export type TimersettingsKey = 'focusDuration' | 'shortBreakDuration' | 'longBreakDuration'

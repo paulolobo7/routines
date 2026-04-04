@@ -1,10 +1,16 @@
+'use client'
 import { Settings, BarChart3, Bell, Coffee } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PomodoroTimer } from "@/components/pomodoro-timer"
 import { StatsCards } from "@/components/stats-card"
 import { TaskList } from "@/components/task-list"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { useState } from "react"
+import { SettingsModal } from "@/components/settings-modal"
 
 export default function Home() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -30,15 +36,23 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-9 w-9">
               <Bell className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" className="h-9 w-9">
               <BarChart3 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9"
+              onClick={() => setIsSettingsOpen(true)}
+            >
               <Settings className="h-5 w-5" />
             </Button>
+            <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+
           </div>
         </div>
       </header>

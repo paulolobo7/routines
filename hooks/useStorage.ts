@@ -41,7 +41,7 @@ export function useStorage<T>({ key, initialValue }: useStorageOptions<T>) {
 
             }
         },
-        [key, isClient, value]
+        [key, isClient]
     );
 
     return [value, setStorageValue] as const;

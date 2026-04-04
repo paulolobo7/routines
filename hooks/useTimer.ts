@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import type { TimerMode } from "@/types";
 import { TIMER_MODES } from "@/lib/constants";
+import { useNotification } from "@/hooks/useNotification";
+import { useSettings } from "./useSettings";
+import { set } from "react-hook-form";
 
 
 interface UseTimerReturn {
@@ -22,16 +25,32 @@ export function useTimer(initialMode: TimerMode = 'focus'): UseTimerReturn {
     const [isRunning, setIsRunning] = useState(false);
     const [currentMode, setCurrentMode] = useState<TimerMode>(initialMode);
 
-    const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode);
-    const totalSeconds = (modeConfig?.duration || 25) * 60;
+    const { settings } = useSettings();
 
+    const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode);
+    const totalSeconds = (() => {
+        if (currentMode === 'focus') {
+            return (settings.focusDuration || 25) * 60;
+        } else if (currentMode === 'shortBreak') {
+            return (settings.shortBreakDuration || 5) * 60;
+        } else {
+            return (settings.longBreakDuration || 15) * 60;
+        }
+    })();
 
     useEffect(() => {
-        const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode);
-        const newTotalSeconds = (modeConfig?.duration || 25) * 60;
+        let newTotalSeconds = 25 * 60; // Default fallback
+        if (currentMode === 'focus') {
+            newTotalSeconds = (settings.focusDuration || 25) * 60;
+        } else if (currentMode === 'shortBreak') {
+            newTotalSeconds = (settings.shortBreakDuration || 5) * 60;
+        } else {
+            newTotalSeconds = (settings.longBreakDuration || 15) * 60;
+        }
         setSecondsLeft(newTotalSeconds);
         setIsRunning(false);
-    }, [currentMode]);
+    }, [currentMode, settings]);
+
 
     useEffect(() => {
         if (!isRunning) return
@@ -49,15 +68,39 @@ export function useTimer(initialMode: TimerMode = 'focus'): UseTimerReturn {
         return () => clearInterval(interval)
     }, [isRunning])
 
+    const { notify } = useNotification();
+
+    useEffect(() => {
+        if (secondsLeft === 0 && totalSeconds > 0 && isRunning === false) {
+
+            const modeConfig = TIMER_MODES.find(m => m.id === currentMode);
+            const mensagem = currentMode === 'focus'
+            ? 'Pausa merecida! Descanse um pouco antes de voltar ao trabalho.'
+            : 'Tempo esgotado! Vamos para a próxima atividade.';
+            notify({
+                title: 'Sessão Concluída',
+                message: mensagem
+            })
+        }
+    }, [secondsLeft, currentMode, notify])
+
     const start = useCallback(() => setIsRunning(true), []);
     const pause = useCallback(() => setIsRunning(false), []);
     
     const reset = useCallback(() => {
         setIsRunning(false);
-        const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode);
-        const newTotalSeconds = (modeConfig?.duration || 25) * 60;
+        
+        let newTotalSeconds = 25 * 60; // Default fallback
+        if (currentMode === 'focus') {
+            newTotalSeconds = (settings.focusDuration || 25) * 60;
+        } else if (currentMode === 'shortBreak') {
+            newTotalSeconds = (settings.shortBreakDuration || 5) * 60;
+        } else {
+            newTotalSeconds = (settings.longBreakDuration || 15) * 60;
+        }
+
         setSecondsLeft(newTotalSeconds);
-    }, [currentMode]);
+    }, [currentMode, settings]);
 
     const switchMode = useCallback((mode: TimerMode) => {
         setCurrentMode(mode);
