@@ -12,17 +12,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DialogDescription } from "@radix-ui/react-dialog"
-import { useTimer } from "@/hooks/useTimer"
 import { AlertCircle } from "lucide-react"
 
 interface SettingsModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
+    isTimerRunning?: boolean
+    onPauseTimer?: () => void
 }
 
-export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
+export function SettingsModal({ open, onOpenChange, isTimerRunning = false, onPauseTimer }: SettingsModalProps) {
     const { settings, updateFocusDuration, updateShortBreakDuration, updateLongBreakDuration, resetToDefaults } = useSettings()
-    const { isRunning, pause } = useTimer()
+
 
     const [localFocus, setLocalFocus] = useState(settings.focusDuration)
     const [localShortBreak, setLocalShortBreak] = useState(settings.shortBreakDuration)
@@ -38,11 +39,14 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         onOpenChange(false)
     }
 
-    useEffect(() => {
-        setLocalFocus(settings.focusDuration)
-        setLocalShortBreak(settings.shortBreakDuration)
-        setLocalLongBreak(settings.longBreakDuration)
-    }, [settings])
+    
+
+
+    // useEffect(() => {
+    //     setLocalFocus(settings.focusDuration)
+    //     setLocalShortBreak(settings.shortBreakDuration)
+    //     setLocalLongBreak(settings.longBreakDuration)
+    // }, [settings, open])
 
     const handleReset = () => {
         resetToDefaults()
@@ -74,7 +78,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                             value={localFocus}
                             onChange={(e) => {
                                 const newValue = Number(e.target.value)
-                                if(isRunning) {
+                                if(isTimerRunning) {
                                     setShowWarning(true)
                                     setPendingChanges('focus')
                                     setPendingValue(newValue)
@@ -97,7 +101,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                             value={localShortBreak}
                             onChange={(e) => {
                                 const newValue = Number(e.target.value)
-                                if(isRunning) {
+                                if(isTimerRunning) {
                                     setShowWarning(true)
                                     setPendingChanges('shortBreak')
                                     setPendingValue(newValue)
@@ -120,7 +124,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                             value={localLongBreak}
                             onChange={(e) => {
                                 const newValue = Number(e.target.value)
-                                if(isRunning) {
+                                if(isTimerRunning) {
                                     setShowWarning(true)
                                     setPendingChanges('longBreak')
                                     setPendingValue(newValue)
@@ -177,7 +181,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                             </Button>
                             <Button
                                 onClick={() => {
-                                    pause()
+                                    onPauseTimer()
 
                                     if(pendingChanges === 'focus' && pendingValue !== null) {
                                         setLocalFocus(pendingValue)

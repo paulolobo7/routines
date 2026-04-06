@@ -10,7 +10,7 @@ const DEFAULT_SETTINGS: TimerSettings = {
     longBreakDuration: 15,
 }
 
-    export function useSettings() {
+export function useSettings() {
         const [settings, setSettings] = useStorage<TimerSettings>({
             key: LOCAL_STORAGE_KEYS.settings,
             initialValue: DEFAULT_SETTINGS

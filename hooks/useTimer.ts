@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { TimerMode } from "@/types";
 import { TIMER_MODES } from "@/lib/constants";
 import { useNotification } from "@/hooks/useNotification";
 import { useSettings } from "./useSettings";
-import { set } from "react-hook-form";
+
+
 
 
 interface UseTimerReturn {
@@ -27,30 +28,33 @@ export function useTimer(initialMode: TimerMode = 'focus'): UseTimerReturn {
 
     const { settings } = useSettings();
 
+    console.log('🔧 useTimer - settings:', settings);
+    console.log('🔧 useTimer - currentMode:', currentMode);
+
     const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode);
     const totalSeconds = (() => {
-        if (currentMode === 'focus') {
-            return (settings.focusDuration || 25) * 60;
-        } else if (currentMode === 'shortBreak') {
-            return (settings.shortBreakDuration || 5) * 60;
-        } else {
-            return (settings.longBreakDuration || 15) * 60;
-        }
+    // ✅ Verificação de segurança
+    if (!settings) {
+        console.log('Settings ainda não carregado');
+        return currentMode === 'focus' ? 25 * 60 : currentMode === 'shortBreak' ? 5 * 60 : 15 * 60;
+    }
+    
+    console.log('Settings carregado:', settings);
+    
+    if (currentMode === 'focus') {
+        return (settings.focusDuration || 25) * 60;
+    } else if (currentMode === 'shortBreak') {
+        return (settings.shortBreakDuration || 5) * 60;
+    } else {
+        return (settings.longBreakDuration || 15) * 60;
+    }
     })();
 
     useEffect(() => {
-        let newTotalSeconds = 25 * 60; // Default fallback
-        if (currentMode === 'focus') {
-            newTotalSeconds = (settings.focusDuration || 25) * 60;
-        } else if (currentMode === 'shortBreak') {
-            newTotalSeconds = (settings.shortBreakDuration || 5) * 60;
-        } else {
-            newTotalSeconds = (settings.longBreakDuration || 15) * 60;
-        }
-        setSecondsLeft(newTotalSeconds);
-        setIsRunning(false);
-    }, [currentMode, settings]);
-
+    console.log('Timer resetado - totalSeconds:', totalSeconds);
+    setSecondsLeft(totalSeconds);
+    setIsRunning(false);
+    }, [totalSeconds])
 
     useEffect(() => {
         if (!isRunning) return
@@ -88,22 +92,13 @@ export function useTimer(initialMode: TimerMode = 'focus'): UseTimerReturn {
     const pause = useCallback(() => setIsRunning(false), []);
     
     const reset = useCallback(() => {
+        setSecondsLeft(totalSeconds);
         setIsRunning(false);
-        
-        let newTotalSeconds = 25 * 60; // Default fallback
-        if (currentMode === 'focus') {
-            newTotalSeconds = (settings.focusDuration || 25) * 60;
-        } else if (currentMode === 'shortBreak') {
-            newTotalSeconds = (settings.shortBreakDuration || 5) * 60;
-        } else {
-            newTotalSeconds = (settings.longBreakDuration || 15) * 60;
-        }
-
-        setSecondsLeft(newTotalSeconds);
-    }, [currentMode, settings]);
+    }, [totalSeconds]);
 
     const switchMode = useCallback((mode: TimerMode) => {
         setCurrentMode(mode);
+        setIsRunning(false);
     }, []);
 
     const progressPercentage = 100 - (secondsLeft / totalSeconds) * 100;
@@ -120,3 +115,4 @@ export function useTimer(initialMode: TimerMode = 'focus'): UseTimerReturn {
         progressPercentage
     };
 }
+export type { UseTimerReturn };

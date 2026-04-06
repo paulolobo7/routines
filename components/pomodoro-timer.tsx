@@ -5,9 +5,14 @@ import { Play, Pause, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTimer } from "@/hooks/useTimer"
 import { TIMER_MODES } from "@/lib/constants"
+import type { UseTimerReturn } from "@/hooks/useTimer"
+
+interface PomodoroTimerProps {
+  timer: UseTimerReturn
+}
 
 
-export function PomodoroTimer() {
+export function PomodoroTimer({ timer }: PomodoroTimerProps) {
   const {
     secondsLeft,
     isRunning,
@@ -17,7 +22,7 @@ export function PomodoroTimer() {
     reset,
     switchMode,
     progressPercentage,
-  } = useTimer('focus')
+  } = timer
 
   const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode)
   const minutes = Math.floor(secondsLeft / 60)

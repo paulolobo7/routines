@@ -5,11 +5,14 @@ import { PomodoroTimer } from "@/components/pomodoro-timer"
 import { StatsCards } from "@/components/stats-card"
 import { TaskList } from "@/components/task-list"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useState } from "react"
+import { use, useState } from "react"
 import { SettingsModal } from "@/components/settings-modal"
+import { useTimer } from "@/hooks/useTimer"
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  const timer = useTimer('focus')
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,8 +54,6 @@ export default function Home() {
             >
               <Settings className="h-5 w-5" />
             </Button>
-            <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
-
           </div>
         </div>
       </header>
@@ -62,7 +63,9 @@ export default function Home() {
         <div className="grid gap-12 lg:grid-cols-[1fr,380px]">
           {/* Timer Section */}
           <section className="flex flex-col items-center justify-center">
-            <PomodoroTimer />
+            <PomodoroTimer 
+              timer={timer}
+            />
           </section>
 
           {/* Sidebar */}
@@ -88,6 +91,14 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* ✅ Settings Modal movido para cá com props do timer */}
+      <SettingsModal 
+        open={isSettingsOpen} 
+        onOpenChange={setIsSettingsOpen}
+        isTimerRunning={timer.isRunning}
+        onPauseTimer={timer.pause}
+      />
     </div>
   )
 }
