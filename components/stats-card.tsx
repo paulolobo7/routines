@@ -1,49 +1,71 @@
+"use client"
+
 import { Clock, Target, Flame, TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import type { StatsData } from "@/hooks/useStats"
 
-const stats = [
+interface StatsCardsProps {
+  stats: StatsData
+}
+
+const CARD_CONFIG = [
   {
     icon: Clock,
     label: "Tempo Focado",
-    value: "4h 25m",
+    key: "focusTimeToday" as const,
     sublabel: "hoje",
+    iconColor: "text-blue-500",
+    iconBg: "bg-blue-500/10",
   },
   {
     icon: Target,
     label: "Sessões",
-    value: "8",
+    key: "sessionsToday" as const,
     sublabel: "completadas",
+    iconColor: "text-emerald-500",
+    iconBg: "bg-emerald-500/10",
   },
   {
     icon: Flame,
     label: "Sequência",
-    value: "12",
+    key: "streak" as const,
     sublabel: "dias",
+    iconColor: "text-orange-500",
+    iconBg: "bg-orange-500/10",
   },
   {
     icon: TrendingUp,
     label: "Média",
-    value: "3h 45m",
+    key: "averagePerDay" as const,
     sublabel: "por dia",
+    iconColor: "text-violet-500",
+    iconBg: "bg-violet-500/10",
   },
 ]
 
-export function StatsCards() {
+export function StatsCards({ stats }: StatsCardsProps) {
+  const values: Record<string, string | number> = {
+    focusTimeToday: stats.focusTimeToday,
+    sessionsToday: stats.sessionsToday,
+    streak: stats.streak,
+    averagePerDay: stats.averagePerDay,
+  }
+
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card key={stat.label} className="border-none bg-card shadow-sm">
+      {CARD_CONFIG.map((card) => (
+        <Card key={card.label} className="border-none bg-card shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{card.label}</p>
                 <p className="mt-1 text-2xl font-semibold text-foreground">
-                  {stat.value}
+                  {values[card.key]}
                 </p>
-                <p className="text-xs text-muted-foreground">{stat.sublabel}</p>
+                <p className="text-xs text-muted-foreground">{card.sublabel}</p>
               </div>
-              <div className="rounded-lg bg-muted p-2">
-                <stat.icon className="h-5 w-5 text-primary" />
+              <div className={`rounded-lg p-2 ${card.iconBg}`}>
+                <card.icon className={`h-5 w-5 ${card.iconColor}`} />
               </div>
             </div>
           </CardContent>

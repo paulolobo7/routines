@@ -38,4 +38,5 @@ export const LOCAL_STORAGE_KEYS = {
     tasks: 'routines:tasks',
     history: 'routines:history',
     settings: 'routines:settings',
+    sessions: 'routines:sessions',
 }

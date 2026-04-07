@@ -7,10 +7,11 @@ import type { UseTimerReturn } from "@/hooks/useTimer"
 
 interface PomodoroTimerProps {
   timer: UseTimerReturn
+  focusSessionsToday?: number
 }
 
 
-export function PomodoroTimer({ timer }: PomodoroTimerProps) {
+export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerProps) {
   const {
     secondsLeft,
     isRunning,
@@ -23,6 +24,10 @@ export function PomodoroTimer({ timer }: PomodoroTimerProps) {
   } = timer
 
   const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode)
+  // Quando focusSessionsToday é múltiplo de 4 (ex: 4, 8), mostra 4 (ciclo completo)
+  // Senão usa o resto da divisão normalmente
+  const remainder = focusSessionsToday % 4
+  const currentCycleSession = (remainder === 0 && focusSessionsToday > 0) ? 4 : remainder
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = secondsLeft % 60
   const progress = progressPercentage
@@ -73,7 +78,7 @@ export function PomodoroTimer({ timer }: PomodoroTimerProps) {
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
-            className={currentMode === "focus" ? "text-primary" : "text-accent"}
+            className={currentMode === "focus" ? "text-primary" : "text-break"}
             style={{ transition: "stroke-dashoffset 0.5s ease" }}
           />
         </svg>
@@ -84,7 +89,7 @@ export function PomodoroTimer({ timer }: PomodoroTimerProps) {
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </span>
           <span className="mt-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {currentMode.toUpperCase()}
+            {modeConfig?.label || currentMode}
           </span>
         </div>
       </div>
@@ -106,13 +111,13 @@ export function PomodoroTimer({ timer }: PomodoroTimerProps) {
           className={`h-16 w-16 rounded-full shadow-lg ${
             currentMode === "focus"
               ? "bg-primary hover:bg-primary/90"
-              : "bg-accent hover:bg-accent/90"
+              : "bg-break hover:bg-break/90"
           }`}
         >
           {isRunning ? (
-            <Pause className="h-6 w-6 text-primary-foreground" />
+            <Pause className={`h-6 w-6 ${currentMode === "focus" ? "text-primary-foreground" : "text-break-foreground"}`} />
           ) : (
-            <Play className="h-6 w-6 translate-x-0.5 text-primary-foreground" />
+            <Play className={`h-6 w-6 translate-x-0.5 ${currentMode === "focus" ? "text-primary-foreground" : "text-break-foreground"}`} />
           )}
         </Button>
 
@@ -124,11 +129,13 @@ export function PomodoroTimer({ timer }: PomodoroTimerProps) {
           <div
             key={i}
             className={`h-3 w-3 rounded-full transition-colors ${
-              i <= 2 ? "bg-primary" : "bg-muted"
+              i <= currentCycleSession ? "bg-primary" : "bg-muted"
             }`}
           />
         ))}
-        <span className="ml-2 text-sm text-muted-foreground">2 de 4 sessões</span>
+        <span className="ml-2 text-sm text-muted-foreground">
+          {currentCycleSession} de 4 sessões
+        </span>
       </div>
     </div>
   )

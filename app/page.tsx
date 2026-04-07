@@ -8,11 +8,24 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { useState } from "react"
 import { SettingsModal } from "@/components/settings-modal"
 import { useTimer } from "@/hooks/useTimer"
+import { useStats } from "@/hooks/useStats"
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-  const timer = useTimer('focus')
+  const { recordSession, stats } = useStats()
+  const timer = useTimer('focus', recordSession)
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      })
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,15 +40,24 @@ export default function Home() {
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <a href="#" className="text-sm font-medium text-foreground">
+            <button 
+              onClick={() => scrollToSection('timer-section')}
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            >
               Timer
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
+            </button>
+            <button 
+              onClick={() => scrollToSection('tasks-section')}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               Tarefas
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Relatórios
-            </a>
+            </button>
+            <button 
+              onClick={() => scrollToSection('stats-section')}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Estatísticas
+            </button>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -62,24 +84,25 @@ export default function Home() {
       <main className="mx-auto max-w-5xl px-6 py-12">
         <div className="grid gap-12 lg:grid-cols-[1fr,380px]">
           {/* Timer Section */}
-          <section className="flex flex-col items-center justify-center">
+          <section id="timer-section" className="flex flex-col items-center justify-center scroll-mt-20">
             <PomodoroTimer 
               timer={timer}
+              focusSessionsToday={stats.focusSessionsToday}
             />
           </section>
 
           {/* Sidebar */}
-          <aside className="space-y-6">
+          <aside id="tasks-section" className="space-y-6 scroll-mt-20">
             <TaskList />
           </aside>
         </div>
 
         {/* Stats Section */}
-        <section className="mt-16">
+        <section id="stats-section" className="mt-16 scroll-mt-20">
           <h2 className="mb-6 text-lg font-semibold text-foreground">
             Suas Estatísticas
           </h2>
-          <StatsCards />
+          <StatsCards stats={stats} />
         </section>
       </main>
 
@@ -92,7 +115,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* ✅ Settings Modal movido para cá com props do timer */}
+      {/* Settings Modal */}
       <SettingsModal 
         open={isSettingsOpen} 
         onOpenChange={setIsSettingsOpen}
