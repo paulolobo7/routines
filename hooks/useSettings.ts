@@ -3,7 +3,6 @@ import { useStorage } from "./useStorage"
 import type { TimerSettings } from "@/types"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 
-
 const DEFAULT_SETTINGS: TimerSettings = {
     focusDuration: 25,
     shortBreakDuration: 5,
@@ -11,12 +10,13 @@ const DEFAULT_SETTINGS: TimerSettings = {
 }
 
 export function useSettings() {
-        const [settings, setSettings] = useStorage<TimerSettings>({
-            key: LOCAL_STORAGE_KEYS.settings,
-            initialValue: DEFAULT_SETTINGS
-        })
+    const [settings, setSettings] = useStorage<TimerSettings>({
+        key: LOCAL_STORAGE_KEYS.settings,
+        initialValue: DEFAULT_SETTINGS
+    })
 
-
+    // Cada função atualiza apenas seu campo, mantendo o resto intacto
+    // O Math.max(1, minutes) garante que nunca será menor que 1 minuto
     const updateFocusDuration = (minutes: number) => {
         setSettings(prev => ({
             ...prev,

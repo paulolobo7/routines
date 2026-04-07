@@ -1,9 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { Play, Pause, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTimer } from "@/hooks/useTimer"
 import { TIMER_MODES } from "@/lib/constants"
 import type { UseTimerReturn } from "@/hooks/useTimer"
 

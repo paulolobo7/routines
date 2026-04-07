@@ -42,11 +42,11 @@ export function SettingsModal({ open, onOpenChange, isTimerRunning = false, onPa
     
 
 
-    // useEffect(() => {
-    //     setLocalFocus(settings.focusDuration)
-    //     setLocalShortBreak(settings.shortBreakDuration)
-    //     setLocalLongBreak(settings.longBreakDuration)
-    // }, [settings, open])
+    useEffect(() => {
+        setLocalFocus(settings.focusDuration)
+        setLocalShortBreak(settings.shortBreakDuration)
+        setLocalLongBreak(settings.longBreakDuration)
+    }, [settings, open])
 
     const handleReset = () => {
         resetToDefaults()
@@ -181,7 +181,7 @@ export function SettingsModal({ open, onOpenChange, isTimerRunning = false, onPa
                             </Button>
                             <Button
                                 onClick={() => {
-                                    onPauseTimer()
+                                    onPauseTimer?.()
 
                                     if(pendingChanges === 'focus' && pendingValue !== null) {
                                         setLocalFocus(pendingValue)

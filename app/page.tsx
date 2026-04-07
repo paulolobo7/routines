@@ -5,7 +5,7 @@ import { PomodoroTimer } from "@/components/pomodoro-timer"
 import { StatsCards } from "@/components/stats-card"
 import { TaskList } from "@/components/task-list"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { use, useState } from "react"
+import { useState } from "react"
 import { SettingsModal } from "@/components/settings-modal"
 import { useTimer } from "@/hooks/useTimer"
 
