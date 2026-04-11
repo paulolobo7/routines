@@ -1,25 +1,63 @@
 'use client'
+
 import { Settings, BarChart3, Bell, Coffee } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PomodoroTimer } from "@/components/pomodoro-timer"
 import { StatsCards } from "@/components/stats-card"
 import { TaskList } from "@/components/task-list"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { SettingsModal } from "@/components/settings-modal"
 import { useTimer } from "@/hooks/useTimer"
 import { useStats } from "@/hooks/useStats"
+import { useActiveTask } from "@/hooks/useActiveTask"
+import type { TimerMode } from "@/types"
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('timer-section')
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id) // ← pega o ID da seção
+          }
+        })
+      },
+      { threshold: 0.4 } // ← 40% visível para considerar ativa
+    )
+
+    const sections = ['timer-section', 'tasks-section', 'stats-section']
+
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
 
   const { recordSession, stats } = useStats()
-  const timer = useTimer('focus', recordSession)
+  const { activeTaskId } = useActiveTask()
+
+  const handleSessionComplete = useCallback(
+    (mode: TimerMode, minutes: number) => {
+      recordSession(mode, minutes, activeTaskId ?? undefined)
+    },
+    [recordSession, activeTaskId]
+  )
+
+  const timer = useTimer('focus', handleSessionComplete)
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
         inline: 'nearest'
@@ -40,21 +78,30 @@ export default function Home() {
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <button 
+            <button
               onClick={() => scrollToSection('timer-section')}
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className={`text-sm font-medium transition-colors ${activeSection === 'timer-section'
+                  ? 'text-foreground'           // ← branco/preto quando ativa
+                  : 'text-muted-foreground hover:text-foreground' // ← cinza quando inativa
+                }`}
             >
               Timer
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('tasks-section')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className={`text-sm font-medium transition-colors ${activeSection === 'tasks-section'
+                  ? 'text-foreground'           // ← branco/preto quando ativa
+                  : 'text-muted-foreground hover:text-foreground' // ← cinza quando inativa
+                }`}
             >
               Tarefas
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('stats-section')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className={`text-sm font-medium transition-colors ${activeSection === 'stats-section'
+                  ? 'text-foreground'           // ← branco/preto quando ativa
+                  : 'text-muted-foreground hover:text-foreground' // ← cinza quando inativa
+                }`}
             >
               Estatísticas
             </button>
@@ -68,9 +115,9 @@ export default function Home() {
             <Button variant="ghost" size="icon" className="h-9 w-9">
               <BarChart3 className="h-5 w-5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-9 w-9"
               onClick={() => setIsSettingsOpen(true)}
             >
@@ -85,7 +132,7 @@ export default function Home() {
         <div className="grid gap-12 lg:grid-cols-[1fr,380px]">
           {/* Timer Section */}
           <section id="timer-section" className="flex flex-col items-center justify-center scroll-mt-20">
-            <PomodoroTimer 
+            <PomodoroTimer
               timer={timer}
               focusSessionsToday={stats.focusSessionsToday}
             />
@@ -116,8 +163,8 @@ export default function Home() {
       </footer>
 
       {/* Settings Modal */}
-      <SettingsModal 
-        open={isSettingsOpen} 
+      <SettingsModal
+        open={isSettingsOpen}
         onOpenChange={setIsSettingsOpen}
         isTimerRunning={timer.isRunning}
         onPauseTimer={timer.pause}

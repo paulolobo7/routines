@@ -9,6 +9,7 @@ export interface SessionRecord {
     type: TimerMode
     durationMinutes: number
     completedAt: string // ISO string
+    taskId?: string
 }
 
 export interface StatsData {
@@ -17,6 +18,7 @@ export interface StatsData {
     focusSessionsToday: number    // para o contador de ciclos do pomodoro
     streak: number
     averagePerDay: string         // "3h 45m"
+    last7Days: { day: string; minutes: number }[]
 }
 
 function formatMinutes(totalMinutes: number): string {
@@ -75,14 +77,32 @@ export function useStats() {
         initialValue: []
     })
 
-    const recordSession = useCallback((type: TimerMode, durationMinutes: number) => {
+    const recordSession = useCallback((
+        type: TimerMode, 
+        durationMinutes: number,
+        taskId?: string
+    ) => {
         const newSession: SessionRecord = {
             id: Date.now().toString(),
             type,
             durationMinutes,
-            completedAt: new Date().toISOString()
+            completedAt: new Date().toISOString(),
+            taskId
         }
         setSessions(prev => [...(prev || []), newSession])
+
+        if (taskId && type === 'focus') {
+            const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.tasks)
+            if (raw) {
+                const tasks = JSON.parse(raw)
+                const updated = tasks.map((t: any) =>
+                    t.id === taskId
+                       ? {...t, timeSpentMinutes: (t.timeSpentMinutes || 0) + durationMinutes}
+                       : t
+                )
+                localStorage.setItem(LOCAL_STORAGE_KEYS.tasks, JSON.stringify(updated))
+            }
+        }
     }, [setSessions])
 
     const stats: StatsData = useMemo(() => {
@@ -112,19 +132,39 @@ export function useStats() {
         const avgMinutes = uniqueDays.size > 0
             ? totalFocusMinutes / uniqueDays.size
             : 0
+            
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date()
+            date.setDate(date.getDate() - (6 - i))     
+            const dateStr = date.toISOString().split('T')[0]
+            const dayLabel = date.toLocaleDateString('pt-BR', { weekday: 'short' })
+        
+            const dayMinutes = allSessions
+                .filter(s => s.type === 'focus' && getDateString(s.completedAt) === dateStr)
+                .reduce((sum, s) => sum + s.durationMinutes, 0)
+        
+                return {
+                    day: dayLabel,
+                    minutes: dayMinutes,
+                }            
+            })
 
         return {
             focusTimeToday: formatMinutes(todayFocusMinutes),
             sessionsToday: todaySessions.length,
             focusSessionsToday: todayFocusSessions.length,
             streak,
-            averagePerDay: formatMinutes(avgMinutes)
+            averagePerDay: formatMinutes(avgMinutes),
+            last7Days
         }
     }, [sessions])
+
+        
 
     return {
         recordSession,
         stats,
-        sessions: sessions || []
+        sessions: sessions || [],
+        last7Days: stats.last7Days
     }
 }

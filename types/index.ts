@@ -13,6 +13,7 @@ export interface Task {
     title: string
     pomodorosNeeded: number
     pomodorosCompleted: number
+    timeSpentMinutes: number
     completed: boolean
     createdAt: Date
 }
@@ -47,3 +48,4 @@ export interface TimerSettings {
 }
 
 export type TimersettingsKey = 'focusDuration' | 'shortBreakDuration' | 'longBreakDuration'
+

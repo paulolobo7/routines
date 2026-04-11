@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useStorage } from "@/hooks/useStorage"
 import { Task } from "@/types"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
+import { useActiveTask } from "@/hooks/useActiveTask"
 
 export function TaskList() {
   const [tasks, setTasks] = useStorage<Task[]>({
@@ -25,6 +26,8 @@ export function TaskList() {
     pomodorosNeeded: 1
   })
 
+
+
   // Criar nova tarefa
   const createTask = () => {
     if (!formData.title.trim()) return
@@ -35,6 +38,7 @@ export function TaskList() {
       pomodorosNeeded: Math.max(1, formData.pomodorosNeeded),
       pomodorosCompleted: 0,
       completed: false,
+      timeSpentMinutes: 0,
       createdAt: new Date()
     }
 
@@ -46,13 +50,13 @@ export function TaskList() {
   const updateTask = () => {
     if (!editingTask || !formData.title.trim()) return
 
-    setTasks(prev => prev?.map(task => 
-      task.id === editingTask.id 
-        ? { 
-            ...task, 
-            title: formData.title.trim(),
-            pomodorosNeeded: Math.max(1, formData.pomodorosNeeded)
-          }
+    setTasks(prev => prev?.map(task =>
+      task.id === editingTask.id
+        ? {
+          ...task,
+          title: formData.title.trim(),
+          pomodorosNeeded: Math.max(1, formData.pomodorosNeeded)
+        }
         : task
     ) || [])
     resetForm()
@@ -73,15 +77,15 @@ export function TaskList() {
 
   // Incrementar pomodoro completado
 
-  
+
   const incrementPomodoro = (taskId: string) => {
-    setTasks(prev => prev?.map(task => 
-      task.id === taskId 
-        ? { 
-            ...task, 
-            pomodorosCompleted: Math.min(task.pomodorosCompleted + 1, task.pomodorosNeeded),
-            completed: task.pomodorosCompleted + 1 >= task.pomodorosNeeded
-          }
+    setTasks(prev => prev?.map(task =>
+      task.id === taskId
+        ? {
+          ...task,
+          pomodorosCompleted: Math.min(task.pomodorosCompleted + 1, task.pomodorosNeeded),
+          completed: task.pomodorosCompleted + 1 >= task.pomodorosNeeded
+        }
         : task
     ) || [])
   }
@@ -120,9 +124,9 @@ export function TaskList() {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="gap-2 text-primary"
               onClick={() => {
                 setEditingTask(null)
@@ -133,7 +137,7 @@ export function TaskList() {
               Adicionar
             </Button>
           </DialogTrigger>
-          
+
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>
@@ -161,23 +165,23 @@ export function TaskList() {
                   min="1"
                   max="10"
                   value={formData.pomodorosNeeded}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    pomodorosNeeded: parseInt(e.target.value) || 1 
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pomodorosNeeded: parseInt(e.target.value) || 1
                   }))}
                   className="mt-1"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={resetForm}
                   className="flex-1"
                 >
                   Cancelar
                 </Button>
-                <Button 
+                <Button
                   onClick={editingTask ? updateTask : createTask}
                   className="flex-1"
                 >
@@ -203,18 +207,16 @@ export function TaskList() {
         {tasks?.map((task) => (
           <div
             key={task.id}
-            className={`group flex items-center gap-4 rounded-lg border border-border p-4 transition-all hover:bg-muted/50 ${
-              task.completed ? "opacity-60" : ""
-            }`}
+            className={`group flex items-center gap-4 rounded-lg border border-border p-4 transition-all hover:bg-muted/50 ${task.completed ? "opacity-60" : ""
+              }`}
           >
             {/* Checkbox */}
             <button
               onClick={() => toggleTask(task.id)}
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                task.completed
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${task.completed
                   ? "border-primary bg-primary"
                   : "border-muted-foreground hover:border-primary"
-              }`}
+                }`}
             >
               {task.completed ? (
                 <Check className="h-3.5 w-3.5 text-primary-foreground" />
@@ -232,9 +234,8 @@ export function TaskList() {
                 {Array.from({ length: task.pomodorosNeeded }).map((_, i) => (
                   <div
                     key={i}
-                    className={`h-2 w-2 rounded-full transition-colors ${
-                      i < task.pomodorosCompleted ? "bg-primary" : "bg-muted"
-                    }`}
+                    className={`h-2 w-2 rounded-full transition-colors ${i < task.pomodorosCompleted ? "bg-primary" : "bg-muted"
+                      }`}
                   />
                 ))}
                 <span className="ml-1 text-xs text-muted-foreground">
@@ -271,7 +272,7 @@ export function TaskList() {
                     <Edit2 className="h-4 w-4 mr-2" />
                     Editar
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => deleteTask(task.id)}
                     className="text-destructive"
                   >
