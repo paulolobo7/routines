@@ -101,6 +101,10 @@ export function useStats() {
                        : t
                 )
                 localStorage.setItem(LOCAL_STORAGE_KEYS.tasks, JSON.stringify(updated))
+
+                window.dispatchEvent(new CustomEvent('routines-storage-sync',{
+                    detail: { key: LOCAL_STORAGE_KEYS.tasks }
+                }))
             }
         }
     }, [setSessions])

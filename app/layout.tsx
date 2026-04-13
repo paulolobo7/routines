@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Routines',
+  title: 'Routines — Timer Pomodoro & Organização de Tarefas',
   description: 'Organize seu tempo e aumente sua produtividade com o Routines, o aplicativo definitivo.',
   keywords: ['pomodoro', 'timer', 'tarefas', 'produtividade', 'foco', 'relatórios'],
   authors: [{ name: 'Paulo Lobo', url: 'https://paulolobo.dev' }],
@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

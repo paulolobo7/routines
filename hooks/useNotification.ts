@@ -36,8 +36,6 @@ export function useNotification() {
         
         playSound()
 
-        console.log(`[NOTIFICATION] ${title || 'Aviso'}: ${message}`)
-
         if ('Notification' in window && Notification.permission === "granted") {
             new Notification(title || 'Routines', {
              body: message,

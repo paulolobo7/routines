@@ -26,6 +26,15 @@ export function TaskList() {
     pomodorosNeeded: 1
   })
 
+  const { activeTaskId, setActiveTask } = useActiveTask()
+
+  const formatTime = (minutes: number) => {
+    if (!minutes || minutes === 0) return null
+    if (minutes < 60) return `${minutes}m`
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return m === 0 ? `${h}h` : `${h}h ${m}m`
+  }
 
 
   // Criar nova tarefa
@@ -238,14 +247,33 @@ export function TaskList() {
                       }`}
                   />
                 ))}
+                
                 <span className="ml-1 text-xs text-muted-foreground">
                   {task.pomodorosCompleted}/{task.pomodorosNeeded}
                 </span>
               </div>
+              {task.timeSpentMinutes > 0 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    ⏱{formatTime(task.timeSpentMinutes)} dedicados
+                  </p>)}
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+              {!task.completed && (
+                <Button
+                size="sm"
+                variant={activeTaskId === task.id ? "default" : "ghost"}
+                onClick={() => setActiveTask(activeTaskId === task.id ? null : task.id)}
+                className="h-8 px-2 text-xs "
+                >
+                  {activeTaskId === task.id ? "Ativa" : "Focar"}
+                </Button>
+              )}
+
+
+
               {!task.completed && task.pomodorosCompleted < task.pomodorosNeeded && (
                 <Button
                   size="sm"
