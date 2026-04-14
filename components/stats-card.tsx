@@ -46,22 +46,14 @@ const CARD_CONFIG = [
   },
 ]
 
-// ─── Hook para ler as variáveis CSS dedicadas do gráfico ───
-// Usamos --chart-bar e --chart-bar-active definidas no globals.css,
-// que têm contraste garantido em light e dark mode.
-// getComputedStyle no documentElement lê o valor oklch(),
-// e nós os passamos para um elemento temporário para obter o RGB resolvido
-// que o Recharts consegue usar.
 function useChartColors() {
   const { resolvedTheme } = useTheme()
   const [colors, setColors] = useState({
-    bar: '#c7c7d4',      // fallback light
-    barActive: '#6366f1', // fallback
+    bar: '#c7c7d4',
+    barActive: '#6366f1',
   })
 
   useEffect(() => {
-    // Função que cria um elemento temporário e usa a variável CSS
-    // diretamente como backgroundColor — o browser resolve oklch → rgb
     const resolveCssVar = (varName: string): string => {
       const el = document.createElement('div')
       el.style.backgroundColor = `var(${varName})`
@@ -70,7 +62,6 @@ function useChartColors() {
       document.body.appendChild(el)
       const color = getComputedStyle(el).backgroundColor
       document.body.removeChild(el)
-      // Se retornar vazio ou transparent, usa o fallback
       if (!color || color === 'rgba(0, 0, 0, 0)') return ''
       return color
     }

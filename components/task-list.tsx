@@ -8,19 +8,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { useStorage } from "@/hooks/useStorage"
 import { Task } from "@/types"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
 import { useActiveTask } from "@/hooks/useActiveTask"
 
 export function TaskList() {
-  const [tasks, setTasks] = useStorage<Task[]>({
+  const [tasks, setTasks, isClient] = useStorage<Task[]>({
     key: LOCAL_STORAGE_KEYS.tasks,
     initialValue: []
   })
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     title: "",
     pomodorosNeeded: 1
@@ -37,7 +39,6 @@ export function TaskList() {
   }
 
 
-  // Criar nova tarefa
   const createTask = () => {
     if (!formData.title.trim()) return
 
@@ -55,7 +56,6 @@ export function TaskList() {
     resetForm()
   }
 
-  // Editar tarefa existente
   const updateTask = () => {
     if (!editingTask || !formData.title.trim()) return
 
@@ -71,12 +71,10 @@ export function TaskList() {
     resetForm()
   }
 
-  // Deletar tarefa
   const deleteTask = (taskId: string) => {
     setTasks(prev => prev?.filter(task => task.id !== taskId) || [])
   }
 
-  // Toggle conclusão da tarefa
   const toggleTask = (id: string) => {
     if (!tasks) return
     setTasks(tasks.map((task) =>
@@ -84,7 +82,6 @@ export function TaskList() {
     ))
   }
 
-  // Incrementar pomodoro completado
 
 
   const incrementPomodoro = (taskId: string) => {
@@ -99,14 +96,12 @@ export function TaskList() {
     ) || [])
   }
 
-  // Resetar formulário
   const resetForm = () => {
     setFormData({ title: "", pomodorosNeeded: 1 })
     setEditingTask(null)
     setIsDialogOpen(false)
   }
 
-  // Abrir modal para edição
   const openEditDialog = (task: Task) => {
     setEditingTask(task)
     setFormData({
@@ -116,12 +111,12 @@ export function TaskList() {
     setIsDialogOpen(true)
   }
 
-  // Estatísticas
   const completedTasks = tasks?.filter(task => task.completed).length || 0
   const totalTasks = tasks?.length || 0
   const totalPomodoros = tasks?.reduce((sum, task) => sum + task.pomodorosCompleted, 0) || 0
 
   return (
+    <>
     <Card className="border-none bg-card shadow-sm animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
@@ -203,7 +198,15 @@ export function TaskList() {
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {tasks && tasks.length === 0 && (
+        {!isClient && (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {isClient && tasks && tasks.length === 0 && (
           <div className="flex flex-col items-center justify-center py-10">
             <div className="mb-4 rounded-full bg-muted p-4">
               <ListChecks className="h-8 w-8 text-muted-foreground" />
@@ -215,7 +218,7 @@ export function TaskList() {
           </div>
         )}
 
-        {tasks?.map((task) => (
+        {isClient && tasks?.map((task) => (
           <div
             key={task.id}
             className={`group flex items-center gap-4 rounded-lg border border-border p-4 transition-all hover:bg-muted/50 ${task.completed ? "opacity-60" : ""
@@ -303,7 +306,7 @@ export function TaskList() {
                     Editar
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => deleteTask(task.id)}
+                    onClick={() => setTaskToDelete(task.id)}
                     className="text-destructive"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -316,5 +319,31 @@ export function TaskList() {
         ))}
       </CardContent>
     </Card>
+
+    <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Deletar tarefa?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Essa ação não pode ser desfeita. A tarefa e o histórico de tempo dedicado serão removidos permanentemente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={() => {
+              if (taskToDelete) {
+                deleteTask(taskToDelete)
+                setTaskToDelete(null)
+              }
+            }}
+          >
+            Deletar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

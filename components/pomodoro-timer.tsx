@@ -25,8 +25,6 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
   } = timer
 
   const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode)
-  // Quando focusSessionsToday é múltiplo de 4 (ex: 4, 8), mostra 4 (ciclo completo)
-  // Senão usa o resto da divisão normalmente
   const remainder = focusSessionsToday % 4
   const currentCycleSession = (remainder === 0 && focusSessionsToday > 0) ? 4 : remainder
   const minutes = Math.floor(secondsLeft / 60)
@@ -36,9 +34,6 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
   const circumference = 2 * Math.PI * 140
   const strokeDashoffset = circumference - (progress / 100) * circumference
 
-  // ─── Atualizar título da aba com o tempo restante ───
-  // Isso permite que o usuário veja o timer mesmo em outra aba.
-  // Quando o timer parar, volta ao título padrão.
   useEffect(() => {
     if (isRunning || secondsLeft < (timer.totalSeconds)) {
       const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
@@ -73,10 +68,11 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
       </div>
 
       {/* Timer Circle — glow pulsa quando o timer está rodando */}
-      <div className="relative">
+      <div className="relative w-[min(320px,80vw)]">
         <svg
-          width="320"
-          height="320"
+          viewBox="0 0 320 320"
+          width="100%"
+          height="100%"
           className={`rotate-[-90deg] transition-all duration-300 ${
             isRunning
               ? currentMode === "focus"

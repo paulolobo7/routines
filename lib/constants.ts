@@ -1,7 +1,5 @@
 import type { TimerConfig } from "@/types";
 
-
-
 export const TIMER_MODES: TimerConfig[] = [
     {
         id: 'focus',
@@ -22,17 +20,6 @@ export const TIMER_MODES: TimerConfig[] = [
         color: 'bg-accent'
     },
 ]
-
-
-
-export const APP_MESSAGES = {
-    title: 'Routines',
-    subtitle: 'Mantenha o foco. Uma sessão de cada vez.',
-    noTasks: 'Nenhuma tarefa ainda. Crie uma para começar!',
-    sessionComplete: 'Sessão Completa!',
-    breakTime: 'Hora de descançar!',
-}
-
 
 export const LOCAL_STORAGE_KEYS = {
     tasks: 'routines:tasks',

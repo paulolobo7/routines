@@ -11,6 +11,7 @@ import { SettingsModal } from "@/components/settings-modal"
 import { useTimer } from "@/hooks/useTimer"
 import { useStats } from "@/hooks/useStats"
 import { useActiveTask } from "@/hooks/useActiveTask"
+import { useNotification } from "@/hooks/useNotification"
 import type { TimerMode } from "@/types"
 
 // Mensagem de boas-vindas baseada na hora do dia
@@ -53,6 +54,11 @@ export default function Home() {
 
   const { recordSession, stats } = useStats()
   const { activeTaskId } = useActiveTask()
+  const { requestPermission } = useNotification()
+
+  useEffect(() => {
+    requestPermission()
+  }, [requestPermission])
 
   const handleSessionComplete = useCallback(
     (mode: TimerMode, minutes: number) => {
