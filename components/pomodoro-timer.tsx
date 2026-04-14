@@ -4,6 +4,7 @@ import { Play, Pause, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TIMER_MODES } from "@/lib/constants"
 import type { UseTimerReturn } from "@/hooks/useTimer"
+import { useEffect } from "react"
 
 interface PomodoroTimerProps {
   timer: UseTimerReturn
@@ -35,15 +36,32 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
   const circumference = 2 * Math.PI * 140
   const strokeDashoffset = circumference - (progress / 100) * circumference
 
+  // ─── Atualizar título da aba com o tempo restante ───
+  // Isso permite que o usuário veja o timer mesmo em outra aba.
+  // Quando o timer parar, volta ao título padrão.
+  useEffect(() => {
+    if (isRunning || secondsLeft < (timer.totalSeconds)) {
+      const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+      const modeLabel = modeConfig?.label || "Timer"
+      document.title = `${timeStr} — ${modeLabel} | Routines`
+    } else {
+      document.title = "Routines — Timer Pomodoro & Organização de Tarefas"
+    }
+
+    return () => {
+      document.title = "Routines — Timer Pomodoro & Organização de Tarefas"
+    }
+  }, [secondsLeft, isRunning, minutes, seconds, modeConfig, timer.totalSeconds])
+
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className="flex flex-col items-center gap-8 animate-fade-in-up">
       {/* Mode Selector */}
       <div className="flex gap-2 rounded-full bg-muted p-1.5">
         {TIMER_MODES.map((mode) => (
           <button
             key={mode.id}
             onClick={() => switchMode(mode.id)}
-            className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
+            className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
               currentMode === mode.id
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -54,9 +72,19 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
         ))}
       </div>
 
-      {/* Timer Circle */}
+      {/* Timer Circle — glow pulsa quando o timer está rodando */}
       <div className="relative">
-        <svg width="320" height="320" className="rotate-[-90deg]">
+        <svg
+          width="320"
+          height="320"
+          className={`rotate-[-90deg] transition-all duration-300 ${
+            isRunning
+              ? currentMode === "focus"
+                ? "timer-glow-focus"
+                : "timer-glow-break"
+              : ""
+          }`}
+        >
           {/* Background circle */}
           <circle
             cx="160"
@@ -85,7 +113,7 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
 
         {/* Timer Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-sans text-7xl font-light tracking-tight text-foreground">
+          <span className="font-sans text-7xl font-light tracking-tight text-foreground tabular-nums">
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </span>
           <span className="mt-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
@@ -100,7 +128,7 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
           variant="outline"
           size="icon"
           onClick={() => reset()}
-          className="h-12 w-12 rounded-full border-2"
+          className="h-12 w-12 rounded-full border-2 transition-transform duration-150 active:scale-90"
         >
           <RotateCcw className="h-5 w-5" />
         </Button>
@@ -108,7 +136,7 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
         <Button
           size="lg"
           onClick={() => isRunning ? pause() : start()}
-          className={`h-16 w-16 rounded-full shadow-lg ${
+          className={`h-16 w-16 rounded-full shadow-lg transition-transform duration-150 active:scale-90 ${
             currentMode === "focus"
               ? "bg-primary hover:bg-primary/90"
               : "bg-break hover:bg-break/90"
@@ -128,7 +156,7 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className={`h-3 w-3 rounded-full transition-colors ${
+            className={`h-3 w-3 rounded-full transition-colors duration-300 ${
               i <= currentCycleSession ? "bg-primary" : "bg-muted"
             }`}
           />

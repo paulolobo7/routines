@@ -25,20 +25,16 @@ export function useTimer(
     const [isRunning, setIsRunning] = useState(false);
     const [currentMode, setCurrentMode] = useState<TimerMode>(initialMode);
 
-    // Flag para saber se o timer já foi iniciado pelo menos uma vez
-    // Isso evita que a notificação dispare quando a página carrega
+    // Contador de sessões de foco para saber quando dar pausa longa
+    const focusCountRef = useRef(0);
+
     const hasStartedRef = useRef(false);
-
-    // Guard para evitar gravar a mesma sessão mais de uma vez
     const hasCompletedRef = useRef(false);
-
-    // Ref para o callback, evita re-renders desnecessários
     const onCompleteRef = useRef(onComplete);
     useEffect(() => { onCompleteRef.current = onComplete; });
 
     const { settings } = useSettings();
 
-    // Calcula o total de segundos baseado no modo atual e nos settings
     const totalSeconds = useMemo(() => {
         if (!settings) {
             return currentMode === 'focus' ? 25 * 60 
@@ -60,15 +56,16 @@ export function useTimer(
         currentMode
     ]);
 
-    // Quando totalSeconds muda (settings alterados ou modo trocado),
-    // reseta o timer para o novo valor
+    // ─── FIX: Depende de currentMode ALÉM de totalSeconds ───
+    // Antes: se dois modos tinham a mesma duração (ex: foco 25min, pausa longa 25min),
+    // totalSeconds não mudava e o efeito não disparava → timer continuava contando.
+    // Agora: currentMode na dependência garante que o reset acontece em TODA troca de modo.
     useEffect(() => {
         setSecondsLeft(totalSeconds);
         setIsRunning(false);
         hasCompletedRef.current = false;
-    }, [totalSeconds]);
+    }, [totalSeconds, currentMode]);
 
-    // O interval que faz o countdown de 1 em 1 segundo
     useEffect(() => {
         if (!isRunning) return;
 
@@ -85,13 +82,11 @@ export function useTimer(
         return () => clearInterval(interval);
     }, [isRunning]);
 
-    // Notificação e gravação da sessão quando o timer chega a zero
     const { notify } = useNotification();
 
+    // Lógica de conclusão e transição automática
     useEffect(() => {
-        // Só executa se o timer já foi iniciado pelo menos uma vez
         if (!hasStartedRef.current) return;
-        // Evita gravar a mesma sessão duas vezes
         if (hasCompletedRef.current) return;
 
         if (secondsLeft === 0 && totalSeconds > 0 && !isRunning) {
@@ -106,8 +101,19 @@ export function useTimer(
                 message: mensagem
             });
 
-            // Grava a sessão completada via callback
             onCompleteRef.current?.(currentMode, totalSeconds / 60);
+
+            // Transição automática de modo
+            if (currentMode === 'focus') {
+                focusCountRef.current += 1;
+                const nextMode: TimerMode = focusCountRef.current % 4 === 0
+                    ? 'longBreak'
+                    : 'shortBreak';
+                setCurrentMode(nextMode);
+            } else {
+                setCurrentMode('focus');
+            }
+            hasStartedRef.current = false;
         }
     }, [secondsLeft, currentMode, notify, totalSeconds, isRunning]);
 

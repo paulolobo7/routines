@@ -16,7 +16,6 @@ export function useStorage<T>({ key, initialValue }: useStorageOptions<T>) {
         setIsClient(true);
     }, [])
 
-    // ✅ CORREÇÃO 1: useEffect separado para ler localStorage
     useEffect(() => {
         if (!isClient) return;
 
@@ -28,7 +27,7 @@ export function useStorage<T>({ key, initialValue }: useStorageOptions<T>) {
         } catch (error) {
             console.error(`Error reading localStorage key "${key}":`, error);
         }
-    }, [key, isClient]); // ✅ Apenas key e isClient como dependências
+    }, [key, isClient]);
 
 
     useEffect(() => {

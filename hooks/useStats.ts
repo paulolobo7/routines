@@ -36,7 +36,6 @@ function getDateString(isoString: string): string {
 function calculateStreak(sessions: SessionRecord[]): number {
     if (!sessions || sessions.length === 0) return 0
 
-    // Dias únicos com sessões de foco, ordenados do mais recente
     const focusDays = new Set(
         sessions
             .filter(s => s.type === 'focus')
@@ -50,7 +49,6 @@ function calculateStreak(sessions: SessionRecord[]): number {
     const today = new Date().toISOString().split('T')[0]
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
-    // Sequência deve incluir hoje ou ontem para ser válida
     if (sortedDays[0] !== today && sortedDays[0] !== yesterday) return 0
 
     let streak = 1
@@ -113,7 +111,6 @@ export function useStats() {
         const allSessions = sessions || []
         const today = new Date().toISOString().split('T')[0]
 
-        // Sessões de hoje
         const todaySessions = allSessions.filter(
             s => getDateString(s.completedAt) === today
         )
@@ -122,10 +119,8 @@ export function useStats() {
             (sum, s) => sum + s.durationMinutes, 0
         )
 
-        // Sequência de dias
         const streak = calculateStreak(allSessions)
 
-        // Média por dia (apenas dias com sessões de foco)
         const focusSessions = allSessions.filter(s => s.type === 'focus')
         const uniqueDays = new Set(
             focusSessions.map(s => getDateString(s.completedAt))

@@ -3,79 +3,96 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   PALETA LIGHT — Indigo vibrante como cor de marca
+   Background com leve toque azulado para não ficar "branco puro"
+   ============================================================ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.005 265);
+  --foreground: oklch(0.15 0.02 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.15 0.02 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.15 0.02 265);
+  --primary: oklch(0.55 0.22 265);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.96 0.01 265);
+  --secondary-foreground: oklch(0.25 0.05 265);
+  --muted: oklch(0.96 0.008 265);
+  --muted-foreground: oklch(0.50 0.03 265);
+  --accent: oklch(0.94 0.02 265);
+  --accent-foreground: oklch(0.25 0.05 265);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --break: oklch(0.45 0.18 155);
-  --break-foreground: oklch(0.985 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
+  --border: oklch(0.91 0.01 265);
+  --input: oklch(0.91 0.01 265);
+  --ring: oklch(0.55 0.22 265);
+  --break: oklch(0.55 0.18 155);
+  --break-foreground: oklch(0.98 0 0);
+  --chart-1: oklch(0.55 0.22 265);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.98 0.005 265);
+  --sidebar-foreground: oklch(0.15 0.02 265);
+  --sidebar-primary: oklch(0.55 0.22 265);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.94 0.02 265);
+  --sidebar-accent-foreground: oklch(0.25 0.05 265);
+  --sidebar-border: oklch(0.91 0.01 265);
+  --sidebar-ring: oklch(0.55 0.22 265);
+  --glow-color: oklch(0.55 0.22 265 / 0.3);
+  --glow-color-break: oklch(0.55 0.18 155 / 0.3);
+  /* Cores específicas para o gráfico — contraste garantido sobre --card */
+  --chart-bar: oklch(0.82 0.01 265);         /* cinza-índigo médio, visível sobre branco */
+  --chart-bar-active: oklch(0.55 0.22 265);  /* indigo primário = barra de hoje */
 }
 
+/* ============================================================
+   PALETA DARK — Indigo luminoso sobre fundo escuro sofisticado
+   ============================================================ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.14 0.015 265);
+  --foreground: oklch(0.95 0.01 265);
+  --card: oklch(0.18 0.015 265);
+  --card-foreground: oklch(0.95 0.01 265);
+  --popover: oklch(0.18 0.015 265);
+  --popover-foreground: oklch(0.95 0.01 265);
+  --primary: oklch(0.70 0.20 265);
+  --primary-foreground: oklch(0.13 0.02 265);
+  --secondary: oklch(0.24 0.02 265);
+  --secondary-foreground: oklch(0.95 0.01 265);
+  --muted: oklch(0.24 0.02 265);
+  --muted-foreground: oklch(0.65 0.04 265);
+  --accent: oklch(0.24 0.02 265);
+  --accent-foreground: oklch(0.95 0.01 265);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --border: oklch(0.28 0.02 265);
+  --input: oklch(0.28 0.02 265);
+  --ring: oklch(0.70 0.20 265);
   --break: oklch(0.65 0.19 155);
-  --break-foreground: oklch(0.145 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
+  --break-foreground: oklch(0.13 0.02 265);
+  --chart-1: oklch(0.70 0.20 265);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar: oklch(0.17 0.015 265);
+  --sidebar-foreground: oklch(0.95 0.01 265);
+  --sidebar-primary: oklch(0.70 0.20 265);
+  --sidebar-primary-foreground: oklch(0.95 0.01 265);
+  --sidebar-accent: oklch(0.24 0.02 265);
+  --sidebar-accent-foreground: oklch(0.95 0.01 265);
+  --sidebar-border: oklch(0.28 0.02 265);
+  --sidebar-ring: oklch(0.70 0.20 265);
+  --glow-color: oklch(0.70 0.20 265 / 0.25);
+  --glow-color-break: oklch(0.65 0.19 155 / 0.25);
+  /* Cores específicas para o gráfico — contraste garantido sobre --card dark */
+  --chart-bar: oklch(0.38 0.02 265);         /* cinza-índigo escuro-médio, visível sobre card dark */
+  --chart-bar-active: oklch(0.70 0.20 265);  /* indigo claro = barra de hoje */
 }
 
 @theme inline {
@@ -133,3 +150,78 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* ============================================================
+   ANIMAÇÕES CUSTOMIZADAS
+   Usadas para dar vida aos componentes ao carregar e interagir
+   ============================================================ */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--glow-color));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--glow-color));
+  }
+}
+
+@keyframes pulse-glow-break {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--glow-color-break));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--glow-color-break));
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+
+.timer-glow-focus {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+.timer-glow-break {
+  animation: pulse-glow-break 2.5s ease-in-out infinite;
+}
+
+/* Delays escalonados para cards entrarem em sequência */
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }

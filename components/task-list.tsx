@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Circle, Plus, Edit2, Trash2, Timer, MoreHorizontal } from "lucide-react"
+import { Check, Circle, Plus, Edit2, Trash2, Timer, MoreHorizontal, ListChecks } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -122,7 +122,7 @@ export function TaskList() {
   const totalPomodoros = tasks?.reduce((sum, task) => sum + task.pomodorosCompleted, 0) || 0
 
   return (
-    <Card className="border-none bg-card shadow-sm">
+    <Card className="border-none bg-card shadow-sm animate-fade-in">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
           <CardTitle className="text-lg font-semibold">Tarefas de Hoje</CardTitle>
@@ -204,11 +204,13 @@ export function TaskList() {
 
       <CardContent className="space-y-3">
         {tasks && tasks.length === 0 && (
-          <div className="text-center py-8">
-            <Circle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Nenhuma tarefa ainda.<br />
-              <span className="text-sm">Crie uma para começar!</span>
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="mb-4 rounded-full bg-muted p-4">
+              <ListChecks className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="font-medium text-foreground">Nenhuma tarefa ainda</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Crie sua primeira tarefa para organizar o dia
             </p>
           </div>
         )}
@@ -258,8 +260,8 @@ export function TaskList() {
                   </p>)}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Actions — sempre visível em mobile, hover em desktop */}
+            <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
 
               {!task.completed && (
                 <Button

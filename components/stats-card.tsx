@@ -4,7 +4,8 @@ import { Clock, Target, Flame, TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import type { StatsData } from "@/hooks/useStats"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
-
+import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
 
 interface StatsCardsProps {
   stats: StatsData
@@ -45,6 +46,47 @@ const CARD_CONFIG = [
   },
 ]
 
+// ─── Hook para ler as variáveis CSS dedicadas do gráfico ───
+// Usamos --chart-bar e --chart-bar-active definidas no globals.css,
+// que têm contraste garantido em light e dark mode.
+// getComputedStyle no documentElement lê o valor oklch(),
+// e nós os passamos para um elemento temporário para obter o RGB resolvido
+// que o Recharts consegue usar.
+function useChartColors() {
+  const { resolvedTheme } = useTheme()
+  const [colors, setColors] = useState({
+    bar: '#c7c7d4',      // fallback light
+    barActive: '#6366f1', // fallback
+  })
+
+  useEffect(() => {
+    // Função que cria um elemento temporário e usa a variável CSS
+    // diretamente como backgroundColor — o browser resolve oklch → rgb
+    const resolveCssVar = (varName: string): string => {
+      const el = document.createElement('div')
+      el.style.backgroundColor = `var(${varName})`
+      el.style.position = 'absolute'
+      el.style.visibility = 'hidden'
+      document.body.appendChild(el)
+      const color = getComputedStyle(el).backgroundColor
+      document.body.removeChild(el)
+      // Se retornar vazio ou transparent, usa o fallback
+      if (!color || color === 'rgba(0, 0, 0, 0)') return ''
+      return color
+    }
+
+    const bar = resolveCssVar('--chart-bar')
+    const barActive = resolveCssVar('--chart-bar-active')
+
+    setColors({
+      bar: bar || (resolvedTheme === 'dark' ? '#3d3d55' : '#c7c7d4'),
+      barActive: barActive || '#6366f1',
+    })
+  }, [resolvedTheme])
+
+  return colors
+}
+
 export function StatsCards({ stats }: StatsCardsProps) {
   const values: Record<string, string | number> = {
     focusTimeToday: stats.focusTimeToday,
@@ -53,16 +95,25 @@ export function StatsCards({ stats }: StatsCardsProps) {
     averagePerDay: stats.averagePerDay,
   }
 
+  const chartColors = useChartColors()
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {CARD_CONFIG.map((card) => (
-          <Card key={card.label} className="border-none bg-card shadow-sm hover:shadow-md transition-shadow">
+        {CARD_CONFIG.map((card, index) => (
+          <Card
+            key={card.label}
+            className={`border-none bg-card shadow-sm hover:shadow-md transition-shadow animate-fade-in-up ${
+              index === 0 ? 'animation-delay-100' :
+              index === 1 ? 'animation-delay-200' :
+              index === 2 ? 'animation-delay-300' : 'animation-delay-400'
+            }`}
+          >
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{card.label}</p>
-                  <p className="mt-1 text-2xl font-semibold text-foreground">
+                  <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
                     {values[card.key]}
                   </p>
                   <p className="text-xs text-muted-foreground">{card.sublabel}</p>
@@ -76,7 +127,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
         ))}
       </div>
       <div className="mt-6">
-        <Card className="border-none bg-card shadow-sm">
+        <Card className="border-none bg-card shadow-sm animate-fade-in-up animation-delay-400">
           <CardContent className="p-5">
             <p className="text-sm font-medium text-foreground mb-4">
               Foco nos últimos 7 dias
@@ -87,7 +138,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'currentColor' }}
+                  className="text-muted-foreground"
                 />
                 <YAxis hide />
                 <Tooltip
@@ -96,13 +148,18 @@ export function StatsCards({ stats }: StatsCardsProps) {
                     'Foco'
                   ]}
                   cursor={{ fill: 'transparent' }}
+                  contentStyle={{
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    fontSize: '13px',
+                  }}
                 />
-                <Bar dataKey="minutes" radius={[4, 4, 0, 0]}>
-                  {stats.last7Days.map((entry, index) => (
+                <Bar dataKey="minutes" radius={[6, 6, 0, 0]}>
+                  {stats.last7Days.map((_entry, index) => (
                     <Cell
                       key={index}
-                      // Destaca o dia atual (último item)
-                      fill={index === 6 ? 'hsl(var(--primary))' : 'hsl(var(--muted))'}
+                      fill={index === 6 ? chartColors.barActive : chartColors.bar}
                     />
                   ))}
                 </Bar>

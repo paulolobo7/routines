@@ -15,8 +15,6 @@ export function useSettings() {
         initialValue: DEFAULT_SETTINGS
     })
 
-    // Cada função atualiza apenas seu campo, mantendo o resto intacto
-    // O Math.max(1, minutes) garante que nunca será menor que 1 minuto
     const updateFocusDuration = (minutes: number) => {
         setSettings(prev => ({
             ...prev,

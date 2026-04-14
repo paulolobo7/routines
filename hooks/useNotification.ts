@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
 
 interface NotificationOptions {
     title?: string
@@ -8,7 +8,6 @@ interface NotificationOptions {
 }
 
 export function useNotification() {
-    const audioRef = useRef<HTMLAudioElement | null>(null)
 
     const playSound = useCallback(() => {
         try {
