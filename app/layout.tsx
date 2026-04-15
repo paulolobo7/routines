@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     siteName: 'Routines',
     images: [
       {
-        url: '/og-image.png',
+        url: '/favicon.png',
         width: 1200,
         height: 630,
         alt: 'Routines - Timer Pomodoro & Organização de Tarefas',
@@ -29,25 +29,12 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Routines — Timer Pomodoro & Organização de Tarefas',
     description: 'Timer Pomodoro com gerenciamento de tarefas e estatísticas em tempo real.',
-    images: ['/og-image.png'],
+    images: ['/favicon.png'],
     creator: '@paulolobo7',
   },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.png',
+    apple: '/favicon.png',
   },
 }
 
