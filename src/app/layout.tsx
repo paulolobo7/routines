@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from 'next-themes'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://routines.paulolobo.dev'),
   title: 'Routines — Timer Pomodoro & Organização de Tarefas',
   description: 'Organize seu tempo e aumente sua produtividade com o Routines, o aplicativo definitivo.',
   keywords: ['pomodoro', 'timer', 'tarefas', 'produtividade', 'foco', 'relatórios'],
