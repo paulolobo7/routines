@@ -1,11 +1,9 @@
 "use client"
 
-import { Clock, Target, Flame, TrendingUp } from "lucide-react"
+import { BarChart3, Clock, Flame, Target, TrendingUp } from "lucide-react"
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent } from "@/components/ui/card"
 import type { StatsData } from "@/hooks/useStats"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
 
 interface StatsCardsProps {
   stats: StatsData
@@ -14,68 +12,50 @@ interface StatsCardsProps {
 const CARD_CONFIG = [
   {
     icon: Clock,
-    label: "Tempo Focado",
+    label: "Tempo focado",
     key: "focusTimeToday" as const,
-    sublabel: "hoje",
-    iconColor: "text-blue-500",
-    iconBg: "bg-blue-500/10",
+    sublabel: "registrado hoje",
+    tone: "text-primary",
+    bg: "bg-focus-soft",
   },
   {
     icon: Target,
-    label: "Sessões",
+    label: "Sessoes",
     key: "sessionsToday" as const,
-    sublabel: "completadas",
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-500/10",
+    sublabel: "concluidas hoje",
+    tone: "text-success",
+    bg: "bg-break-soft",
   },
   {
     icon: Flame,
-    label: "Sequência",
+    label: "Sequencia",
     key: "streak" as const,
-    sublabel: "dias",
-    iconColor: "text-orange-500",
-    iconBg: "bg-orange-500/10",
+    sublabel: "dias com foco",
+    tone: "text-warning",
+    bg: "bg-warning/15",
   },
   {
     icon: TrendingUp,
-    label: "Média",
+    label: "Media diaria",
     key: "averagePerDay" as const,
-    sublabel: "por dia",
-    iconColor: "text-violet-500",
-    iconBg: "bg-violet-500/10",
+    sublabel: "por dia ativo",
+    tone: "text-chart-3",
+    bg: "bg-accent",
   },
 ]
 
-function useChartColors() {
-  const { resolvedTheme } = useTheme()
-  const [colors, setColors] = useState({
-    bar: '#c7c7d4',
-    barActive: '#6366f1',
-  })
+const ANIMATION_DELAYS = [
+  "animation-delay-100",
+  "animation-delay-200",
+  "animation-delay-300",
+  "animation-delay-400",
+] as const
 
-  useEffect(() => {
-    const resolveCssVar = (varName: string): string => {
-      const el = document.createElement('div')
-      el.style.backgroundColor = `var(${varName})`
-      el.style.position = 'absolute'
-      el.style.visibility = 'hidden'
-      document.body.appendChild(el)
-      const color = getComputedStyle(el).backgroundColor
-      document.body.removeChild(el)
-      if (!color || color === 'rgba(0, 0, 0, 0)') return ''
-      return color
-    }
-
-    const bar = resolveCssVar('--chart-bar')
-    const barActive = resolveCssVar('--chart-bar-active')
-
-    setColors({
-      bar: bar || (resolvedTheme === 'dark' ? '#3d3d55' : '#c7c7d4'),
-      barActive: barActive || '#6366f1',
-    })
-  }, [resolvedTheme])
-
-  return colors
+function formatTooltipMinutes(value: number): string {
+  if (value < 60) return `${value}m`
+  const hours = Math.floor(value / 60)
+  const minutes = value % 60
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
@@ -86,79 +66,100 @@ export function StatsCards({ stats }: StatsCardsProps) {
     averagePerDay: stats.averagePerDay,
   }
 
-  const chartColors = useChartColors()
+  const hasChartData = stats.last7Days.some((day) => day.minutes > 0)
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {CARD_CONFIG.map((card, index) => (
-          <Card
-            key={card.label}
-            className={`border-none bg-card shadow-sm hover:shadow-md transition-shadow animate-fade-in-up ${
-              index === 0 ? 'animation-delay-100' :
-              index === 1 ? 'animation-delay-200' :
-              index === 2 ? 'animation-delay-300' : 'animation-delay-400'
-            }`}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{card.label}</p>
-                  <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
-                    {values[card.key]}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{card.sublabel}</p>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {CARD_CONFIG.map((card, index) => {
+          const Icon = card.icon
+
+          return (
+            <Card
+              key={card.label}
+              className={`animate-fade-in-up border-border/70 bg-surface-elevated py-0 shadow-[var(--shadow-soft)] ${ANIMATION_DELAYS[index]}`}
+            >
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                    <p className="mt-2 text-3xl font-semibold leading-none text-foreground tabular-nums">
+                      {values[card.key]}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">{card.sublabel}</p>
+                  </div>
+                  <div className={`rounded-lg p-2.5 ${card.bg}`}>
+                    <Icon className={`h-5 w-5 ${card.tone}`} aria-hidden="true" />
+                  </div>
                 </div>
-                <div className={`rounded-lg p-2 ${card.iconBg}`}>
-                  <card.icon className={`h-5 w-5 ${card.iconColor}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
-      <div className="mt-6">
-        <Card className="border-none bg-card shadow-sm animate-fade-in-up animation-delay-400">
-          <CardContent className="p-5">
-            <p className="text-sm font-medium text-foreground mb-4">
-              Foco nos últimos 7 dias
-            </p>
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={stats.last7Days} barSize={28}>
+
+      <Card className="animate-fade-in-up border-border/70 bg-surface-elevated py-0 shadow-[var(--shadow-soft)] animation-delay-400">
+        <CardContent className="p-4 sm:p-5">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+                <BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />
+                Ultimos 7 dias
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Minutos de foco por dia
+              </p>
+            </div>
+            {!hasChartData && (
+              <span className="rounded-lg border border-border/70 bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                Sem sessoes registradas
+              </span>
+            )}
+          </div>
+
+          <div className="h-56 w-full" aria-label="Grafico de foco dos ultimos sete dias">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats.last7Days} margin={{ top: 10, right: 6, left: -24, bottom: 0 }}>
                 <XAxis
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: 'currentColor' }}
-                  className="text-muted-foreground"
+                  tickMargin={10}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                 />
-                <YAxis hide />
+                <YAxis
+                  width={36}
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                />
                 <Tooltip
-                  formatter={(value: number) => [
-                    value < 60 ? `${value}m` : `${Math.floor(value / 60)}h${value % 60 > 0 ? ` ${value % 60}m` : ''}`,
-                    'Foco'
-                  ]}
-                  cursor={{ fill: 'transparent' }}
+                  formatter={(value: number) => [formatTooltipMinutes(value), "Foco"]}
+                  cursor={{ fill: "var(--surface-muted)" }}
                   contentStyle={{
-                    borderRadius: '8px',
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    fontSize: '13px',
+                    background: "var(--popover)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-control)",
+                    boxShadow: "var(--shadow-soft)",
+                    color: "var(--popover-foreground)",
+                    fontSize: "13px",
                   }}
+                  labelStyle={{ color: "var(--foreground)", fontWeight: 600 }}
                 />
-                <Bar dataKey="minutes" radius={[6, 6, 0, 0]}>
-                  {stats.last7Days.map((_entry, index) => (
+                <Bar dataKey="minutes" radius={[8, 8, 3, 3]} barSize={32} minPointSize={hasChartData ? 0 : 4}>
+                  {stats.last7Days.map((entry, index) => (
                     <Cell
-                      key={index}
-                      fill={index === 6 ? chartColors.barActive : chartColors.bar}
+                      key={entry.day}
+                      fill={index === stats.last7Days.length - 1 ? "var(--chart-bar-active)" : "var(--chart-bar)"}
                     />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

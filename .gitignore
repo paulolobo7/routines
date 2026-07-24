@@ -14,3 +14,27 @@ next.user-config.*
 node_modules
 .next/
 .DS_Store
+
+# Local docs/notes
+*.md
+!README.md
+
+# Build outputs and caches
+out/
+dist/
+coverage/
+.turbo/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local editor and agent folders
+.vscode/
+.claude/
+.codex/
+.agents/

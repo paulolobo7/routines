@@ -1,18 +1,34 @@
 "use client"
 
-import { Play, Pause, RotateCcw } from "lucide-react"
+import { CheckCircle2, Pause, Play, RotateCcw, TimerReset } from "lucide-react"
+import { useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { TIMER_MODES } from "@/lib/constants"
 import type { UseTimerReturn } from "@/hooks/useTimer"
-import { useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface PomodoroTimerProps {
   timer: UseTimerReturn
   focusSessionsToday?: number
+  activeTaskTitle?: string | null
 }
 
+function formatDisplayTime(secondsLeft: number): string {
+  const minutes = Math.floor(secondsLeft / 60)
+  const seconds = secondsLeft % 60
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+}
 
-export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerProps) {
+function formatAccessibleMinutes(secondsLeft: number): string {
+  const minutes = Math.max(0, Math.ceil(secondsLeft / 60))
+  return `${minutes} ${minutes === 1 ? "minuto restante" : "minutos restantes"}`
+}
+
+export function PomodoroTimer({
+  timer,
+  focusSessionsToday = 0,
+  activeTaskTitle,
+}: PomodoroTimerProps) {
   const {
     secondsLeft,
     isRunning,
@@ -24,142 +40,220 @@ export function PomodoroTimer({ timer, focusSessionsToday = 0 }: PomodoroTimerPr
     progressPercentage,
   } = timer
 
-  const modeConfig = TIMER_MODES.find(mode => mode.id === currentMode)
-  const remainder = focusSessionsToday % 4
-  const currentCycleSession = (remainder === 0 && focusSessionsToday > 0) ? 4 : remainder
-  const minutes = Math.floor(secondsLeft / 60)
-  const seconds = secondsLeft % 60
-  const progress = progressPercentage
+  const modeConfig = TIMER_MODES.find((mode) => mode.id === currentMode)
+  const modeLabel = modeConfig?.label ?? "Timer"
+  const isBreak = currentMode !== "focus"
+  const displayTime = formatDisplayTime(secondsLeft)
+  const completedInCycle = focusSessionsToday % 4
+  const circumference = 2 * Math.PI * 144
+  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference
 
-  const circumference = 2 * Math.PI * 140
-  const strokeDashoffset = circumference - (progress / 100) * circumference
+  const accessibleTimerLabel = useMemo(
+    () =>
+      `${formatAccessibleMinutes(secondsLeft)} em ${modeLabel}. Timer ${
+        isRunning ? "em andamento" : "pausado"
+      }.`,
+    [isRunning, modeLabel, secondsLeft]
+  )
 
   useEffect(() => {
-    if (isRunning || secondsLeft < (timer.totalSeconds)) {
-      const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
-      const modeLabel = modeConfig?.label || "Timer"
-      document.title = `${timeStr} — ${modeLabel} | Routines`
+    if (isRunning || secondsLeft < timer.totalSeconds) {
+      document.title = `${displayTime} - ${modeLabel} | Routines`
     } else {
-      document.title = "Routines — Timer Pomodoro & Organização de Tarefas"
+      document.title = "Routines - Timer Pomodoro e organizacao de tarefas"
     }
 
     return () => {
-      document.title = "Routines — Timer Pomodoro & Organização de Tarefas"
+      document.title = "Routines - Timer Pomodoro e organizacao de tarefas"
     }
-  }, [secondsLeft, isRunning, minutes, seconds, modeConfig, timer.totalSeconds])
+  }, [displayTime, isRunning, modeLabel, secondsLeft, timer.totalSeconds])
 
   return (
-    <div className="flex flex-col items-center gap-8 animate-fade-in-up">
-      {/* Mode Selector */}
-      <div className="flex gap-2 rounded-full bg-muted p-1.5">
-        {TIMER_MODES.map((mode) => (
-          <button
-            key={mode.id}
-            onClick={() => switchMode(mode.id)}
-            className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
-              currentMode === mode.id
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {mode.label}
-          </button>
-        ))}
-      </div>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl border border-border/75 bg-surface-elevated p-4 shadow-[var(--shadow-elevated)] sm:p-6 lg:min-h-[41rem]",
+        isRunning && (isBreak ? "shadow-[var(--shadow-break)]" : "shadow-[var(--shadow-focus)]")
+      )}
+    >
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-1",
+          isBreak ? "bg-break" : "bg-focus"
+        )}
+        aria-hidden="true"
+      />
 
-      {/* Timer Circle — glow pulsa quando o timer está rodando */}
-      <div className="relative w-[min(320px,80vw)]">
-        <svg
-          viewBox="0 0 320 320"
-          width="100%"
-          height="100%"
-          className={`rotate-[-90deg] transition-all duration-300 ${
-            isRunning
-              ? currentMode === "focus"
-                ? "timer-glow-focus"
-                : "timer-glow-break"
-              : ""
-          }`}
-        >
-          {/* Background circle */}
-          <circle
-            cx="160"
-            cy="160"
-            r="140"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="8"
-            className="text-muted"
-          />
-          {/* Progress circle */}
-          <circle
-            cx="160"
-            cy="160"
-            r="140"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            className={currentMode === "focus" ? "text-primary" : "text-break"}
-            style={{ transition: "stroke-dashoffset 0.5s ease" }}
-          />
-        </svg>
-
-        {/* Timer Display */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-sans text-7xl font-light tracking-tight text-foreground tabular-nums">
-            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-          </span>
-          <span className="mt-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {modeConfig?.label || currentMode}
-          </span>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => reset()}
-          className="h-12 w-12 rounded-full border-2 transition-transform duration-150 active:scale-90"
-        >
-          <RotateCcw className="h-5 w-5" />
-        </Button>
-
-        <Button
-          size="lg"
-          onClick={() => isRunning ? pause() : start()}
-          className={`h-16 w-16 rounded-full shadow-lg transition-transform duration-150 active:scale-90 ${
-            currentMode === "focus"
-              ? "bg-primary hover:bg-primary/90"
-              : "bg-break hover:bg-break/90"
-          }`}
-        >
-          {isRunning ? (
-            <Pause className={`h-6 w-6 ${currentMode === "focus" ? "text-primary-foreground" : "text-break-foreground"}`} />
-          ) : (
-            <Play className={`h-6 w-6 translate-x-0.5 ${currentMode === "focus" ? "text-primary-foreground" : "text-break-foreground"}`} />
-          )}
-        </Button>
-
-      </div>
-
-      {/* Session Counter */}
-      <div className="flex items-center gap-3">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase text-primary" id="timer-title">
+              Timer Pomodoro
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold text-foreground">
+              {modeLabel}
+            </h2>
+          </div>
           <div
-            key={i}
-            className={`h-3 w-3 rounded-full transition-colors duration-300 ${
-              i <= currentCycleSession ? "bg-primary" : "bg-muted"
-            }`}
-          />
-        ))}
-        <span className="ml-2 text-sm text-muted-foreground">
-          {currentCycleSession} de 4 sessões
-        </span>
+            className={cn(
+              "inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold",
+              isBreak
+                ? "border-break/25 bg-break-soft text-break"
+                : "border-focus/25 bg-focus-soft text-focus"
+            )}
+          >
+            <span className={cn("h-2 w-2 rounded-full", isBreak ? "bg-break" : "bg-focus")} aria-hidden="true" />
+            {isRunning ? "Em andamento" : "Pronto para iniciar"}
+          </div>
+        </div>
+
+        <div
+          className="grid w-full grid-cols-3 gap-2 rounded-lg border border-border/70 bg-surface-muted p-1"
+          role="group"
+          aria-label="Selecionar modo do timer"
+        >
+          {TIMER_MODES.map((mode) => {
+            const isActive = currentMode === mode.id
+            const modeIsBreak = mode.id !== "focus"
+
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => switchMode(mode.id)}
+                aria-pressed={isActive}
+                className={cn(
+                  "min-h-11 rounded-md px-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isActive
+                    ? modeIsBreak
+                      ? "bg-break text-break-foreground shadow-sm"
+                      : "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-card hover:text-foreground"
+                )}
+              >
+                {mode.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="relative aspect-square w-full max-w-[21rem] sm:max-w-[24rem]">
+          <svg
+            viewBox="0 0 340 340"
+            className={cn(
+              "h-full w-full -rotate-90 transition-[filter] duration-300",
+              isRunning && (isBreak ? "timer-glow-break" : "timer-glow-focus")
+            )}
+            role="img"
+            aria-label={`Progresso da sessao: ${Math.round(progressPercentage)}% concluido`}
+          >
+            <circle
+              cx="170"
+              cy="170"
+              r="144"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="14"
+              className="text-muted"
+            />
+            <circle
+              cx="170"
+              cy="170"
+              r="144"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="14"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className={isBreak ? "text-break" : "text-primary"}
+              style={{ transition: "stroke-dashoffset 600ms var(--ease-standard)" }}
+            />
+          </svg>
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+            <span
+              className="text-[clamp(3.8rem,19vw,6.5rem)] font-semibold leading-none text-foreground tabular-nums"
+              aria-hidden="true"
+            >
+              {displayTime}
+            </span>
+            <span className="mt-4 text-sm font-semibold text-muted-foreground">
+              {Math.round(progressPercentage)}% concluido
+            </span>
+            <span className="sr-only" aria-live="polite">
+              {accessibleTimerLabel}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid w-full gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={reset}
+            className="min-h-12 rounded-lg border-border/80 bg-background/70 active:scale-[0.98] sm:justify-self-end"
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            Reiniciar
+          </Button>
+
+          <Button
+            type="button"
+            size="lg"
+            onClick={() => (isRunning ? pause() : start())}
+            className={cn(
+              "min-h-14 rounded-lg px-7 text-base font-semibold shadow-[var(--shadow-soft)] active:scale-[0.98]",
+              isBreak
+                ? "bg-break text-break-foreground hover:bg-break/90"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            aria-label={isRunning ? "Pausar timer" : "Iniciar timer"}
+          >
+            {isRunning ? (
+              <Pause className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Play className="h-5 w-5" aria-hidden="true" />
+            )}
+            {isRunning ? "Pausar" : "Iniciar"}
+          </Button>
+
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-border/70 bg-surface p-3 sm:justify-self-start">
+            <TimerReset className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <span className="text-sm font-medium text-muted-foreground">
+              Ciclo
+            </span>
+            <div className="flex items-center gap-1" aria-label={`${completedInCycle} de 4 sessoes de foco concluidas no ciclo atual`}>
+              {[1, 2, 3, 4].map((index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    "h-2.5 w-2.5 rounded-full",
+                    index <= completedInCycle ? "bg-primary" : "bg-muted"
+                  )}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full rounded-lg border border-border/70 bg-surface p-4">
+          <div className="flex items-start gap-3">
+            <CheckCircle2
+              className={cn("mt-0.5 h-5 w-5", activeTaskTitle ? "text-success" : "text-muted-foreground")}
+              aria-hidden="true"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Tarefa em foco
+              </p>
+              <p className="mt-1 truncate text-sm text-muted-foreground">
+                {activeTaskTitle ?? "Selecione uma tarefa para vincular a proxima sessao."}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

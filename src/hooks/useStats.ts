@@ -2,7 +2,7 @@
 import { useCallback, useMemo } from "react"
 import { useStorage } from "./useStorage"
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants"
-import type { TimerMode } from "@/types"
+import type { Task, TimerMode } from "@/types"
 
 export interface SessionRecord {
     id: string
@@ -69,6 +69,23 @@ function calculateStreak(sessions: SessionRecord[]): number {
     return streak
 }
 
+function isTask(value: unknown): value is Task {
+    if (typeof value !== 'object' || value === null) return false
+    const task = value as Partial<Task>
+    return (
+        typeof task.id === 'string' &&
+        typeof task.title === 'string' &&
+        typeof task.pomodorosNeeded === 'number' &&
+        typeof task.pomodorosCompleted === 'number' &&
+        typeof task.completed === 'boolean'
+    )
+}
+
+function parseTasks(raw: string): Task[] {
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter(isTask) : []
+}
+
 export function useStats() {
     const [sessions, setSessions] = useStorage<SessionRecord[]>({
         key: LOCAL_STORAGE_KEYS.sessions,
@@ -92,17 +109,21 @@ export function useStats() {
         if (taskId && type === 'focus') {
             const raw = localStorage.getItem(LOCAL_STORAGE_KEYS.tasks)
             if (raw) {
-                const tasks = JSON.parse(raw)
-                const updated = tasks.map((t: any) =>
-                    t.id === taskId
-                       ? {...t, timeSpentMinutes: (t.timeSpentMinutes || 0) + durationMinutes}
-                       : t
-                )
-                localStorage.setItem(LOCAL_STORAGE_KEYS.tasks, JSON.stringify(updated))
+                try {
+                    const tasks = parseTasks(raw)
+                    const updated = tasks.map((t) =>
+                        t.id === taskId
+                           ? {...t, timeSpentMinutes: (t.timeSpentMinutes || 0) + durationMinutes}
+                           : t
+                    )
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.tasks, JSON.stringify(updated))
 
-                window.dispatchEvent(new CustomEvent('routines-storage-sync',{
-                    detail: { key: LOCAL_STORAGE_KEYS.tasks }
-                }))
+                    window.dispatchEvent(new CustomEvent('routines-storage-sync',{
+                        detail: { key: LOCAL_STORAGE_KEYS.tasks }
+                    }))
+                } catch (error) {
+                    console.error('Erro ao atualizar tempo dedicado da tarefa:', error)
+                }
             }
         }
     }, [setSessions])

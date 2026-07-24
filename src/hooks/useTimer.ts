@@ -49,12 +49,7 @@ export function useTimer(
         } else {
             return (settings.longBreakDuration || 15) * 60;
         }
-    }, [
-        settings?.focusDuration,
-        settings?.shortBreakDuration,
-        settings?.longBreakDuration,
-        currentMode
-    ]);
+    }, [settings, currentMode]);
 
     // ─── FIX: Depende de currentMode ALÉM de totalSeconds ───
     // Antes: se dois modos tinham a mesma duração (ex: foco 25min, pausa longa 25min),

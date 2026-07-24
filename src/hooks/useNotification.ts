@@ -4,14 +4,20 @@ import { useCallback } from "react"
 interface NotificationOptions {
     title?: string
     message: string
-    duration?: number
+}
+
+interface WindowWithWebkitAudio extends Window {
+    webkitAudioContext?: typeof AudioContext
 }
 
 export function useNotification() {
 
     const playSound = useCallback(() => {
         try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+            const AudioContextConstructor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext
+            if (!AudioContextConstructor) return
+
+            const audioContext = new AudioContextConstructor()
             const oscillator = audioContext.createOscillator()
             const gainNode = audioContext.createGain()
 
@@ -31,14 +37,14 @@ export function useNotification() {
         }
     }, [])
 
-    const notify = useCallback(({ title, message, duration = 3000 }: NotificationOptions) => {
+    const notify = useCallback(({ title, message }: NotificationOptions) => {
         
         playSound()
 
         if ('Notification' in window && Notification.permission === "granted") {
             new Notification(title || 'Routines', {
              body: message,
-             icon: "/favicon.ico" 
+             icon: "/favicon.png" 
             })
         }
     }, [playSound])

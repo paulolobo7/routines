@@ -1,209 +1,178 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from "react"
-import { useSettings } from "@/hooks/useSettings"
-import { 
-    Dialog, 
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog"
+import { useEffect, useMemo, useState } from "react"
+import { AlertCircle, RotateCcw, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
+import { TIMER_DURATION_LIMITS, useSettings } from "@/hooks/useSettings"
 
 interface SettingsModalProps {
-    open: boolean
-    onOpenChange: (open: boolean) => void
-    isTimerRunning?: boolean
-    onPauseTimer?: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  isTimerRunning?: boolean
+  onPauseTimer?: () => void
 }
 
-export function SettingsModal({ open, onOpenChange, isTimerRunning = false, onPauseTimer }: SettingsModalProps) {
-    const { settings, updateFocusDuration, updateShortBreakDuration, updateLongBreakDuration, resetToDefaults } = useSettings()
+interface DurationField {
+  id: "focus" | "shortBreak" | "longBreak"
+  label: string
+  description: string
+  value: number
+  onChange: (value: number) => void
+}
 
+function normalizeDuration(value: number): number {
+  if (!Number.isFinite(value)) return TIMER_DURATION_LIMITS.min
+  return Math.min(TIMER_DURATION_LIMITS.max, Math.max(TIMER_DURATION_LIMITS.min, Math.round(value)))
+}
 
-    const [localFocus, setLocalFocus] = useState(settings.focusDuration)
-    const [localShortBreak, setLocalShortBreak] = useState(settings.shortBreakDuration)
-    const [localLongBreak, setLocalLongBreak] = useState(settings.longBreakDuration)
-    const [showWarning, setShowWarning] = useState(false)
-    const [pendingChanges, setPendingChanges] = useState<'focus' | 'shortBreak' | 'longBreak' | null>(null)
-    const [pendingValue, setPendingValue] = useState<number | null>(null)
+export function SettingsModal({
+  open,
+  onOpenChange,
+  isTimerRunning = false,
+  onPauseTimer,
+}: SettingsModalProps) {
+  const {
+    settings,
+    updateFocusDuration,
+    updateShortBreakDuration,
+    updateLongBreakDuration,
+    resetToDefaults,
+  } = useSettings()
 
-    const handleSave = () => {
-        updateFocusDuration(localFocus)
-        updateShortBreakDuration(localShortBreak)
-        updateLongBreakDuration(localLongBreak)
-        onOpenChange(false)
+  const [localFocus, setLocalFocus] = useState(settings.focusDuration)
+  const [localShortBreak, setLocalShortBreak] = useState(settings.shortBreakDuration)
+  const [localLongBreak, setLocalLongBreak] = useState(settings.longBreakDuration)
+
+  useEffect(() => {
+    if (!open) return
+    setLocalFocus(settings.focusDuration)
+    setLocalShortBreak(settings.shortBreakDuration)
+    setLocalLongBreak(settings.longBreakDuration)
+  }, [open, settings.focusDuration, settings.longBreakDuration, settings.shortBreakDuration])
+
+  const fields: DurationField[] = useMemo(
+    () => [
+      {
+        id: "focus",
+        label: "Foco",
+        description: "Tempo da sessao principal.",
+        value: localFocus,
+        onChange: setLocalFocus,
+      },
+      {
+        id: "shortBreak",
+        label: "Pausa curta",
+        description: "Intervalo entre ciclos de foco.",
+        value: localShortBreak,
+        onChange: setLocalShortBreak,
+      },
+      {
+        id: "longBreak",
+        label: "Pausa longa",
+        description: "Descanso apos quatro sessoes.",
+        value: localLongBreak,
+        onChange: setLocalLongBreak,
+      },
+    ],
+    [localFocus, localLongBreak, localShortBreak]
+  )
+
+  const hasChanges =
+    localFocus !== settings.focusDuration ||
+    localShortBreak !== settings.shortBreakDuration ||
+    localLongBreak !== settings.longBreakDuration
+
+  const handleSave = () => {
+    if (isTimerRunning && hasChanges) {
+      onPauseTimer?.()
     }
 
-    
+    updateFocusDuration(localFocus)
+    updateShortBreakDuration(localShortBreak)
+    updateLongBreakDuration(localLongBreak)
+    onOpenChange(false)
+  }
 
-
-    useEffect(() => {
-        setLocalFocus(settings.focusDuration)
-        setLocalShortBreak(settings.shortBreakDuration)
-        setLocalLongBreak(settings.longBreakDuration)
-    }, [settings, open])
-
-    const handleReset = () => {
-        resetToDefaults()
-        setLocalFocus(25)
-        setLocalShortBreak(5)
-        setLocalLongBreak(15)
+  const handleReset = () => {
+    if (isTimerRunning) {
+      onPauseTimer?.()
     }
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Configurações do Temporizador</DialogTitle>
-                    <DialogDescription>
-                    Personalize a duração de cada tipo de sessão
-                    </DialogDescription>
-                </DialogHeader>
+    resetToDefaults()
+    setLocalFocus(25)
+    setLocalShortBreak(5)
+    setLocalLongBreak(15)
+  }
 
-                <div className="space-y-6">
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Configuracoes do temporizador</DialogTitle>
+          <DialogDescription>
+            Ajuste duracoes entre {TIMER_DURATION_LIMITS.min} e {TIMER_DURATION_LIMITS.max} minutos. As alteracoes preservam seus dados salvos.
+          </DialogDescription>
+        </DialogHeader>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="focus-duration" className="text-base font-medium">
-                            Duração do Foco (minutos)
-                        </Label>
-                        <Input
-                            id="focus-duration"
-                            type="number"
-                            min={1}
-                            value={localFocus}
-                            onChange={(e) => {
-                                const newValue = Number(e.target.value)
-                                if(isTimerRunning) {
-                                    setShowWarning(true)
-                                    setPendingChanges('focus')
-                                    setPendingValue(newValue)
-                                } else {
-                                    setLocalFocus(newValue)
-                                }
-                            }}
-                            className="h-10"
-                        />
-                    </div>
+        {isTimerRunning && hasChanges && (
+          <div className="flex gap-3 rounded-lg border border-warning/35 bg-warning/15 p-3 text-sm text-warning-foreground">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+            <p>
+              Salvar novas duracoes pausara o timer atual para evitar uma mudanca inesperada no ciclo em andamento.
+            </p>
+          </div>
+        )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="short-break-duration" className="text-base font-medium">
-                            Duração do Intervalo Curto (minutos)
-                        </Label>
-                        <Input
-                            id="short-break-duration"
-                            type="number"
-                            min={1}
-                            value={localShortBreak}
-                            onChange={(e) => {
-                                const newValue = Number(e.target.value)
-                                if(isTimerRunning) {
-                                    setShowWarning(true)
-                                    setPendingChanges('shortBreak')
-                                    setPendingValue(newValue)
-                                } else {
-                                    setLocalShortBreak(newValue)
-                                }
-                            }}
-                            className="h-10"
-                        />
-                    </div>
+        <div className="grid gap-4">
+          {fields.map((field) => {
+            const inputId = `${field.id}-duration`
+            const descriptionId = `${field.id}-duration-description`
 
-                    <div className="space-y-2">
-                        <Label htmlFor="long-break-duration" className="text-base font-medium">
-                            Duração do Intervalo Longo (minutos)
-                        </Label>
-                        <Input
-                            id="long-break-duration"
-                            type="number"
-                            min={1}
-                            value={localLongBreak}
-                            onChange={(e) => {
-                                const newValue = Number(e.target.value)
-                                if(isTimerRunning) {
-                                    setShowWarning(true)
-                                    setPendingChanges('longBreak')
-                                    setPendingValue(newValue)
-                                } else {
-                                    setLocalLongBreak(newValue)
-                                }
-                            }}
-                            className="h-10"
-                        />
-                    </div>
+            return (
+              <div key={field.id} className="rounded-lg border border-border/70 bg-surface p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <Label htmlFor={inputId} className="text-sm font-semibold">
+                      {field.label}
+                    </Label>
+                    <p id={descriptionId} className="mt-1 text-sm text-muted-foreground">
+                      {field.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id={inputId}
+                      type="number"
+                      inputMode="numeric"
+                      min={TIMER_DURATION_LIMITS.min}
+                      max={TIMER_DURATION_LIMITS.max}
+                      value={field.value}
+                      onChange={(event) => field.onChange(normalizeDuration(Number(event.target.value)))}
+                      aria-describedby={descriptionId}
+                      className="h-11 w-24 text-center font-semibold tabular-nums"
+                    />
+                    <span className="text-sm text-muted-foreground">min</span>
+                  </div>
                 </div>
+              </div>
+            )
+          })}
+        </div>
 
-                <div className="flex gap-3 justify-end">
-                    <Button 
-                        variant="outline" 
-                        onClick={handleReset}
-                        className="flex-1"
-                    >
-                        Resetar para Padrões
-                    </Button>
-                    <Button 
-                        onClick={handleSave}
-                        className="flex-1"
-                    >
-                        Salvar
-                    </Button>
-                </div>
-            </DialogContent>
-            {showWarning && (
-                <Dialog open={showWarning} onOpenChange={setShowWarning}>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle className="flex item-center gap-2">
-                                <AlertCircle className="h-5 w-5 text-yellow-500" />
-                                Timer em Contagem
-                            </DialogTitle>
-                        </DialogHeader>
-
-                        <p className="mb-4 text-sm text-muted-foreground">
-                              Você está tentando alterar a duração enquanto o timer ainda está contando. O que você deseja fazer?
-                        </p>
-
-                        <div className="flex gap-3">
-                            <Button 
-                                variant="outline" 
-                                onClick={() => {
-                                     setShowWarning(false)
-                                     setPendingValue(null)
-                                     setPendingChanges(null)
-                                }}
-                                className="flex-1"
-                            >
-                                Continuar
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    onPauseTimer?.()
-
-                                    if(pendingChanges === 'focus' && pendingValue !== null) {
-                                        setLocalFocus(pendingValue)
-                                    }else if(pendingChanges === 'shortBreak' && pendingValue !== null) {
-                                        setLocalShortBreak(pendingValue)
-                                    }else if(pendingChanges === 'longBreak' && pendingValue !== null) {
-                                        setLocalLongBreak(pendingValue)
-                                    }
-
-                                    setShowWarning(false)
-                                    setPendingValue(null)
-                                    setPendingChanges(null)
-                                    
-                                }}
-                                className="flex-1"
-                            >
-                                Pausar e Editar
-                            </Button>
-                        </div>
-                    </DialogContent>    
-                </Dialog>
-            )}
-        </Dialog>
-    )
+        <DialogFooter>
+          <Button variant="outline" onClick={handleReset}>
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            Padroes
+          </Button>
+          <Button onClick={handleSave} disabled={!hasChanges}>
+            <Save className="h-4 w-4" aria-hidden="true" />
+            {isTimerRunning && hasChanges ? "Salvar e pausar" : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 }
