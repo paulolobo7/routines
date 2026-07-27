@@ -171,7 +171,7 @@ export function TaskList() {
     <>
       <Card className="animate-fade-in-up border-border/70 bg-surface-elevated py-0 shadow-[var(--shadow-soft)]">
         <CardHeader className="gap-4 p-4 pb-3 sm:p-5">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase text-primary">
                 Planejamento
@@ -192,7 +192,7 @@ export function TaskList() {
               }}
             >
               <DialogTrigger asChild>
-                <Button size="sm" className="min-h-10 shrink-0 rounded-lg" onClick={openCreateDialog}>
+                <Button size="sm" className="min-h-10 w-full rounded-lg whitespace-normal sm:w-auto" onClick={openCreateDialog}>
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   Nova
                 </Button>
@@ -402,7 +402,7 @@ export function TaskList() {
                           onClick={() => setActiveTask(isActive ? null : task.id)}
                           disabled={task.completed}
                           aria-pressed={isActive}
-                          className="min-h-10 rounded-lg"
+                          className="min-h-10 min-w-0 rounded-lg whitespace-normal"
                         >
                           <Target className="h-4 w-4" aria-hidden="true" />
                           {isActive ? "Remover foco" : "Focar"}
@@ -414,7 +414,7 @@ export function TaskList() {
                           size="sm"
                           onClick={() => incrementPomodoro(task.id)}
                           disabled={task.completed || task.pomodorosCompleted >= task.pomodorosNeeded}
-                          className="min-h-10 rounded-lg"
+                          className="min-h-10 min-w-0 rounded-lg whitespace-normal"
                         >
                           <Timer className="h-4 w-4" aria-hidden="true" />
                           Registrar ciclo

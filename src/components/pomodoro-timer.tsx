@@ -95,7 +95,7 @@ export function PomodoroTimer({
           </div>
           <div
             className={cn(
-              "inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold",
+              "inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-center text-xs font-semibold sm:w-fit sm:justify-start",
               isBreak
                 ? "border-break/25 bg-break-soft text-break"
                 : "border-focus/25 bg-focus-soft text-focus"
@@ -107,7 +107,7 @@ export function PomodoroTimer({
         </div>
 
         <div
-          className="grid w-full grid-cols-3 gap-2 rounded-lg border border-border/70 bg-surface-muted p-1"
+          className="grid w-full grid-cols-1 gap-2 rounded-lg border border-border/70 bg-surface-muted p-1 sm:grid-cols-3"
           role="group"
           aria-label="Selecionar modo do timer"
         >
@@ -122,7 +122,7 @@ export function PomodoroTimer({
                 onClick={() => switchMode(mode.id)}
                 aria-pressed={isActive}
                 className={cn(
-                  "min-h-11 rounded-md px-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "min-h-11 min-w-0 rounded-md px-3 py-2 text-center text-sm leading-tight font-semibold whitespace-normal transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
                     ? modeIsBreak
                       ? "bg-break text-break-foreground shadow-sm"
@@ -192,7 +192,7 @@ export function PomodoroTimer({
             variant="outline"
             size="lg"
             onClick={reset}
-            className="min-h-12 rounded-lg border-border/80 bg-background/70 active:scale-[0.98] sm:justify-self-end"
+            className="min-h-12 min-w-0 rounded-lg border-border/80 bg-background/70 whitespace-normal active:scale-[0.98] sm:justify-self-end"
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             Reiniciar
@@ -203,7 +203,7 @@ export function PomodoroTimer({
             size="lg"
             onClick={() => (isRunning ? pause() : start())}
             className={cn(
-              "min-h-14 rounded-lg px-7 text-base font-semibold shadow-[var(--shadow-soft)] active:scale-[0.98]",
+              "min-h-14 min-w-0 rounded-lg px-7 text-base font-semibold whitespace-normal shadow-[var(--shadow-soft)] active:scale-[0.98]",
               isBreak
                 ? "bg-break text-break-foreground hover:bg-break/90"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
