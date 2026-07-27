@@ -140,11 +140,11 @@ export default function Home() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 pb-28 sm:px-6 sm:py-8 md:pb-12 lg:px-8">
+      <main className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 px-4 py-6 pb-28 sm:px-6 sm:py-8 md:pb-12 lg:px-8">
         <WelcomeSummary greeting={greeting} stats={stats} />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,25rem)] lg:items-start">
-          <section id="timer-section" className="scroll-mt-24" aria-labelledby="timer-title">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,25rem)] lg:items-start">
+          <section id="timer-section" className="min-w-0 scroll-mt-24" aria-labelledby="timer-title">
             <PomodoroTimer
               timer={timer}
               focusSessionsToday={stats.focusSessionsToday}
@@ -152,12 +152,12 @@ export default function Home() {
             />
           </section>
 
-          <section id="tasks-section" className="scroll-mt-24" aria-labelledby="tasks-title">
+          <section id="tasks-section" className="min-w-0 scroll-mt-24" aria-labelledby="tasks-title">
             <TaskList />
           </section>
         </div>
 
-        <section id="stats-section" className="scroll-mt-24" aria-labelledby="stats-title">
+        <section id="stats-section" className="min-w-0 scroll-mt-24" aria-labelledby="stats-title">
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase text-primary">

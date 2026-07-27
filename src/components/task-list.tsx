@@ -169,7 +169,7 @@ export function TaskList() {
 
   return (
     <>
-      <Card className="animate-fade-in-up border-border/70 bg-surface-elevated py-0 shadow-[var(--shadow-soft)]">
+      <Card className="animate-fade-in-up w-full min-w-0 border-border/70 bg-surface-elevated py-0 shadow-[var(--shadow-soft)]">
         <CardHeader className="gap-4 p-4 pb-3 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">

@@ -71,7 +71,7 @@ export function PomodoroTimer({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border/75 bg-surface-elevated p-4 shadow-[var(--shadow-elevated)] sm:p-6 lg:min-h-[41rem]",
+        "relative w-full min-w-0 overflow-hidden rounded-xl border border-border/75 bg-surface-elevated p-4 shadow-[var(--shadow-elevated)] sm:p-6 lg:min-h-[41rem]",
         isRunning && (isBreak ? "shadow-[var(--shadow-break)]" : "shadow-[var(--shadow-focus)]")
       )}
     >
@@ -83,7 +83,7 @@ export function PomodoroTimer({
         aria-hidden="true"
       />
 
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex w-full min-w-0 flex-col items-center gap-6">
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase text-primary" id="timer-title">
