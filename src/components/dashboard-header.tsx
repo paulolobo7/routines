@@ -3,6 +3,7 @@
 import { BarChart3, Coffee, ListChecks, Settings, Timer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { AuthButton } from "@/components/auth-button"
 import { TIMER_MODES } from "@/lib/constants"
 import type { TimerMode } from "@/types"
 import { cn } from "@/lib/utils"
@@ -93,6 +94,7 @@ export function DashboardHeader({
             <span className="text-muted-foreground">{isRunning ? "ativo" : "pausado"}</span>
           </div>
           <ThemeToggle />
+          <AuthButton />
           <Button
             variant="ghost"
             size="icon"
